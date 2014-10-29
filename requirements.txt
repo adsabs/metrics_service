@@ -1,0 +1,7 @@
+Flask>=0.9
+Flask-RESTful
+psycopg2
+SQLAlchemy
+numpy
+simplejson>=3.3.0
+multiprocessing
