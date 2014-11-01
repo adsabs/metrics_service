@@ -79,17 +79,29 @@ class Statistics():
         # get number of refereed entries
         cls.number_of_refereed_entries = len(refereed_values)
         # get normalized value
-        cls.normalized_value = '%.1f' % round(vector_product(values,weights), 1)
+        cls.normalized_value = float('%.1f' % round(vector_product(values,weights), 1))
         # get refereed normalized value
-        cls.refereed_normalized_value = '%.1f' % round(vector_product(refereed_values,refereed_weights), 1)
+        cls.refereed_normalized_value = float('%.1f' % round(vector_product(refereed_values,refereed_weights), 1))
         # get mean value of values
-        cls.mean_value = '%.1f' % round(mean(values), 1)
+        if len(values) != 0:
+            cls.mean_value = float('%.1f' % round(mean(values), 1))
+        else:
+            cls.mean_value = 0
         # get mean value of refereed values
-        cls.refereed_mean_value = '%.1f' % round(mean(refereed_values), 1)
+        if len(refereed_values) != 0:
+            cls.refereed_mean_value = float('%.1f' % round(mean(refereed_values), 1))
+        else:
+            cls.refereed_mean_value = 0.0
         # get median value of values
-        cls.median_value = '%.1f' % round(median(values), 1)
+        if len(values) != 0:
+            cls.median_value = float('%.1f' % round(median(values), 1))
+        else:
+            cls.median_value = 0.0
         # get median value of refereed values
-        cls.refereed_median_value = '%.1f' % round(median(refereed_values), 1)
+        if len(refereed_values) != 0:
+            cls.refereed_median_value = float('%.1f' % round(median(refereed_values), 1))
+        else:
+            cls.refereed_median_value = 0.0
         # get total of values
         cls.total_value = sum(values)
         # get total of refereed values
@@ -144,12 +156,17 @@ class Metrics():
             e = sqrt(sum(citations[:h]) - h*h)
         except:
             e = 'NA'
+        # Get the number of self-citations
+        try:
+            number_of_self_citations = sum(map(lambda a: a['number_of_self_citations'], cls.metrics_data))
+        except:
+            number_of_self_citations = 0
         # get the Tori index
         rn_citations = map(lambda a: a['rn_citations'], cls.metrics_data)
         auth_nums    = map(lambda a: 1.0/float(a['author_num']), cls.metrics_data)
         tori = vector_product(rn_citations,auth_nums)
         try:
-            read10_reads = map(lambda a: a[7][-1], cls.reads10data)
+            read10_reads = map(lambda a: a[7][-2], cls.reads10data)
             read10_auths = map(lambda a: 1.0/float(a[4]), cls.reads10data)
             read10 = vector_product(read10_reads, read10_auths)
         except:
@@ -160,13 +177,14 @@ class Metrics():
             riq = "NA"
         cls.h_index = h
         cls.g_index = g
-        cls.m_index = '%.1f' % round(float(h)/float(cls.time_span), 2)
+        cls.m_index = float('%.1f' % round(float(h)/float(cls.time_span), 2))
         cls.i10_index = len(filter(lambda a: a >= 10, citations))
         cls.i100_index= len(filter(lambda a: a >= 100, citations))
-        cls.e_index = '%.1f' % round(e,1)
-        cls.tori = '%.1f' % round(tori,1)
-        cls.riq  = '%.1f' % round(riq,1)
+        cls.e_index = float('%.1f' % round(e,1))
+        cls.tori = float('%.1f' % round(tori,1))
+        cls.riq  = float('%.1f' % round(riq,1))
         cls.read10 = int(round(read10))
+        cls.number_of_self_citations = number_of_self_citations
 
         cls.post_process()
 
@@ -261,6 +279,8 @@ class TimeSeries():
             else:
                 threshold = year - 10
                 year_index = year - 1996
+                if year == maxYear:
+                    year_index -= 1
                 reads10data = filter(lambda a: len(a[7]) > 0 and int(a[0][:4]) > threshold, cls.attributes)
                 try:
                     read10_reads = map(lambda a: a[7][year_index], reads10data)
@@ -483,6 +503,7 @@ class TotalMetrics(Metrics):
         cls.results['tori index (Total)'] = cls.tori
         cls.results['roq index (Total)'] = cls.riq
         cls.results['read10 index (Total)'] = cls.read10
+        cls.results['self-citations (Total)'] = cls.number_of_self_citations
 
 class RefereedMetrics(Metrics):
     config_data_name = 'refereed_metrics'
@@ -512,6 +533,7 @@ class RefereedMetrics(Metrics):
         cls.results['tori index (Refereed)'] = cls.tori
         cls.results['roq index (Refereed)'] = cls.riq
         cls.results['read10 index (Refereed)'] = cls.read10
+        cls.results['self-citations (Refereed)'] = cls.number_of_self_citations
 
 class PublicationHistogram(Histogram):
     config_data_name = 'publication_histogram'
