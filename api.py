@@ -23,10 +23,23 @@ class Metrics(Resource):
             abort(400)
 
         return jsonify(results)
+
+    def get(self, bibcode):
+       try:
+           results = generate_metrics(bibcodes=[bibcode])
+       except Exception, err:
+            sys.stderr.write('Unable to get results! (%s)' % err)
+            abort(400)
+       return jsonify(results)
+
+class Resources(Resource):
+    def get(self):
+      return config.RESOURCES
 ##
 ## Actually setup the Api resource routing here
 ##
-api.add_resource(Metrics, '/metrics')
+api.add_resource(Metrics, '/metrics', '/metrics/<string:bibcode>')
+api.add_resource(Resources, '/resources')
 
 if __name__ == '__main__':
     app.run(debug=True)

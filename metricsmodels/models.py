@@ -323,7 +323,6 @@ class PublicationStatistics(Statistics):
             data.append((1,weight))
             if vector[1]:
                 refereed_data.append((1,weight))
-        print data
         cls.data = data
         cls.refereed_data = refereed_data
 
