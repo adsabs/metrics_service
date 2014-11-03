@@ -64,7 +64,6 @@ def get_attributes(args):
     bibcodes = map(lambda a: a.strip(), args['bibcodes'])
     # Get precomputed metrics data, key-ed on bibcode
     metrics_data = get_metrics_data(bibcodes=bibcodes)
-    print metrics_data
     missing_bibcodes = filter(lambda a: a not in metrics_data.keys(), bibcodes)
     if len(missing_bibcodes) > 0:
         sys.stderr.write("Bibcodes found with missing metrics data: %s" % ",".join(missing_bibcodes))
