@@ -2,12 +2,13 @@ import sys
 from flask import Flask
 from flask import request
 from flask import jsonify
+from flask import Blueprint
 from flask.ext.restful import abort, Api, Resource
 from config import config
 from metrics_utils import generate_metrics
 
-app = Flask(__name__)
-api = Api(app)
+app_blueprint = Blueprint('api', __name__)
+api = Api(app_blueprint)
 
 class Metrics(Resource):
 
@@ -42,4 +43,6 @@ api.add_resource(Metrics, '/metrics', '/metrics/<string:bibcode>')
 api.add_resource(Resources, '/resources')
 
 if __name__ == '__main__':
+    app = Flask(__name__)
+    app.register_blueprint(app_blueprint)
     app.run(debug=True)
