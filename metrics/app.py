@@ -1,15 +1,9 @@
 import os
-from flask import Blueprint, Flask
 from flask import Flask, g
-from views import Resources, UnixTime, Metrics, PubMetrics
+from views import blueprint, Resources, UnixTime, Metrics, PubMetrics
 from flask.ext.restful import Api
 
 def create_app():
-  blueprint = Blueprint(
-      'metrics',
-      __name__,
-      static_folder=None,
-  )
   api = Api(blueprint)
   api.add_resource(Resources, '/resources')
   api.add_resource(UnixTime, '/time')
