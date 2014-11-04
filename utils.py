@@ -83,9 +83,9 @@ class MetricsDataHarvester(Process):
                 result = self.session.query(MetricsModel).filter(MetricsModel.bibcode==bibcode).one()
                 metr_data = json.dumps(result, cls=AlchemyEncoder)
                 self.result_queue.put(json.loads(metr_data))
-            except PostgresQueryError, e:
+            except Exception, e:
                 sys.stderr.write("Postgres metrics data query for %s blew up (%s)" % (bibcode,e))
-                raise
+                self.result_queue.put("Exception! Postgres metrics data query for %s blew up (%s)" % (bibcode,e))
         return
 
 def get_metrics_data(**args):
@@ -116,6 +116,8 @@ def get_metrics_data(**args):
     metrics_data_dict = {}
     while num_jobs:
         data = results.get()
+        if 'Exception' in data:
+            raise PostgresQueryError, data
         try:
             rn_citations, rn_hist, n_self = remove_self_citations(bibcodes,data)
             data['rn_citations'] = rn_citations

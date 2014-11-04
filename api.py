@@ -2,7 +2,7 @@ import sys
 from flask import Flask
 from flask import request
 from flask import Blueprint
-from flask.ext.restful import abort, Api, Resource
+from flask.ext.restful import Api, Resource
 from config import config
 from metrics_utils import generate_metrics
 
@@ -14,14 +14,13 @@ class Metrics(Resource):
     scope = 'oauth:metrics:read'
     def post(self):
         if not request.json or not 'bibcodes' in request.json:
-            abort(400)
+            return {'msg': 'no bibcodes found in POST body'}, 400
         bibcodes = map(lambda a: str(a), request.json['bibcodes'])
 
         try:
             results = generate_metrics(bibcodes=bibcodes)
         except Exception, err:
-            sys.stderr.write('Unable to get results! (%s)' % err)
-            abort(400)
+            return {'msg': 'Unable to get results! (%s)' % err}, 500
 
         return results
 
@@ -32,8 +31,7 @@ class PubMetrics(Resource):
        try:
            results = generate_metrics(bibcodes=[bibcode])
        except Exception, err:
-            sys.stderr.write('Unable to get results! (%s)' % err)
-            abort(400)
+           return {'msg': 'Unable to get results! (%s)' % err}, 500
        return results
 
 class Resources(Resource):
