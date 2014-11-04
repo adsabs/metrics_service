@@ -1,7 +1,6 @@
 import sys
 from flask import Flask
 from flask import request
-from flask import jsonify
 from flask import Blueprint
 from flask.ext.restful import abort, Api, Resource
 from config import config
@@ -24,7 +23,7 @@ class Metrics(Resource):
             sys.stderr.write('Unable to get results! (%s)' % err)
             abort(400)
 
-        return jsonify(results)
+        return results
 
 class PubMetrics(Resource):
     """Get metrics for a single publication (identified by its bibcode)"""
@@ -35,7 +34,7 @@ class PubMetrics(Resource):
        except Exception, err:
             sys.stderr.write('Unable to get results! (%s)' % err)
             abort(400)
-       return jsonify(results)
+       return results
 
 class Resources(Resource):
     """Overview of available resources"""
@@ -43,12 +42,11 @@ class Resources(Resource):
     def get(self):
         func_list = {}
         for rule in app.url_map.iter_rules():
-            if rule.endpoint != 'static':
-                func_list[rule.rule] = {'methods':app.view_functions[rule.endpoint].methods,
-                                        'scope': app.view_functions[rule.endpoint].view_class.scope,
-                                        'description': app.view_functions[rule.endpoint].view_class.__doc__,
+            func_list[rule.rule] = {'methods':app.view_functions[rule.endpoint].methods,
+                                    'scope': app.view_functions[rule.endpoint].view_class.scope,
+                                    'description': app.view_functions[rule.endpoint].view_class.__doc__,
                                        }
-        return jsonify(func_list)
+        return func_list
 ##
 ## Actually setup the Api resource routing here
 ##
@@ -57,6 +55,6 @@ api.add_resource(PubMetrics, '/metrics/<string:bibcode>')
 api.add_resource(Resources, '/resources')
 
 if __name__ == '__main__':
-    app = Flask(__name__)
+    app = Flask(__name__, static_folder=None)
     app.register_blueprint(app_blueprint)
     app.run(debug=True)
