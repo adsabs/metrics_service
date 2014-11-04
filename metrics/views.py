@@ -1,8 +1,14 @@
-from flask import current_app
+from flask import current_app, Blueprint, request
 from flask.ext.restful import Resource
 import time
 
 from metrics_utils import generate_metrics
+
+blueprint = Blueprint(
+      'metrics',
+      __name__,
+      static_folder=None,
+)
 
 class Metrics(Resource):
     """computes all metrics on the POST body"""
@@ -11,7 +17,6 @@ class Metrics(Resource):
         if not request.json or not 'bibcodes' in request.json:
             return {'msg': 'no bibcodes found in POST body'}, 400
         bibcodes = map(lambda a: str(a), request.json['bibcodes'])
-        print bibcodes
         try:
             results = generate_metrics(bibcodes=bibcodes)
         except Exception, err:
