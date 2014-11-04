@@ -10,8 +10,6 @@ from numpy import vdot as vector_product
 from numpy import sqrt
 from numpy import histogram
 import math
-# get access to local helper functions
-from config import config
 # JSON functionality
 import simplejson as json
 
@@ -125,10 +123,6 @@ class Statistics():
         pass
 
 # Metrics class
-
-# to calculate tori:
-#    tori_list = [item for sublist in cit_dict.values() for item in sublist]
-#    print sum(map(lambda c: 1.0/float(c), map(lambda b: max(b[1],config.METRICS_MIN_BIBLIO_LENGTH)*b[2],filter(lambda a: len(a) > 0, tori_list))))
 
 class Metrics():
 

@@ -15,8 +15,8 @@ from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy import create_engine
-# local imports
-from config import config
+#
+from flask import current_app
 
 __all__ = ['get_metrics_data']
 
@@ -70,7 +70,7 @@ class MetricsDataHarvester(Process):
         Process.__init__(self)
         self.task_queue = task_queue
         self.result_queue = result_queue
-        engine = create_engine(config.SQLALCHEMY_DATABASE_URI)
+        engine = create_engine(current_app.config['SQLALCHEMY_DATABASE_URI'])
         Base.metadata.create_all(engine)
         DBSession = sessionmaker(bind=engine)
         self.session = DBSession()

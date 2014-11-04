@@ -12,10 +12,10 @@ import itertools
 import simplejson as json
 from multiprocessing import Pool, current_process
 from multiprocessing import Manager
+#
+from flask import current_app
 # methods to retrieve various types of data
 from utils import get_metrics_data
-# Get all pertinent configs
-from config import config
 # Every type of 'metric' is calculated in a 'model'
 import metricsmodels
 
@@ -118,14 +118,13 @@ def format_results(data_dict,**args):
 
 # General metrics engine
 def generate_metrics(**args):
-
     # First we gather the necessary 'attributes' for all publications involved
     # (see above methods for more details)
     attr_list,num_cit,num_cit_ref = get_attributes(args)
     # What types of metrics are we gather (everything by default)
     stats_models = []
     # Retrieve which types of metrics are to be calculated
-    model_types = args.get('types',config.METRICS_DEFAULT_MODELS)
+    model_types = args.get('types',current_app.config['METRICS_DEFAULT_MODELS'])
     # Instantiate the metrics classes, defined in the 'models' module
     for model_class in metricsmodels.data_models(models=model_types.split(',')):
         model_class.attributes = attr_list
