@@ -1,12 +1,15 @@
 import os
 from flask import Flask, g
-from views import blueprint, Resources, UnixTime, Metrics, PubMetrics
+from views import blueprint, Resources, UnixTime, PrintArg, ExampleApiUsage, Metrics, PubMetrics
 from flask.ext.restful import Api
+from client import Client
 
 def create_app():
   api = Api(blueprint)
   api.add_resource(Resources, '/resources')
   api.add_resource(UnixTime, '/time')
+  api.add_resource(PrintArg,'/print/<string:arg>')
+  api.add_resource(ExampleApiUsage,'/search')
   api.add_resource(Metrics, '/metrics')
   api.add_resource(PubMetrics, '/metrics/<string:bibcode>')
 
@@ -18,4 +21,5 @@ def create_app():
   except ImportError:
     pass
   app.register_blueprint(blueprint)
+  app.client = Client(app.config['CLIENT'])
   return app
