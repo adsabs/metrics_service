@@ -29,7 +29,7 @@ class PubMetrics(Resource):
     scopes = 'oauth:metrics:read'
     def get(self, bibcode):
        try:
-           results = generate_metrics(bibcodes=[bibcode])
+           results = generate_metrics(bibcodes=[bibcode], types='statistics,histograms')
        except Exception, err:
            return {'msg': 'Unable to get results! (%s)' % err}, 500
        return results
