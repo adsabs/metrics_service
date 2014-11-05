@@ -2,7 +2,7 @@ from flask import current_app, Blueprint, request
 from flask.ext.restful import Resource
 import time
 
-from metrics_utils import generate_metrics
+from utils.metrics import generate_metrics
 
 blueprint = Blueprint(
       'metrics',
@@ -12,11 +12,13 @@ blueprint = Blueprint(
 
 class Metrics(Resource):
     """computes all metrics on the POST body"""
-    scopes = 'oauth:metrics:read'
+    scopes = ['oauth:metrics:read']
     def post(self):
         if not request.json or not 'bibcodes' in request.json:
             return {'msg': 'no bibcodes found in POST body'}, 400
-        bibcodes = map(lambda a: str(a), request.json['bibcodes'])
+        bibcodes = map(str, request.json['bibcode'])
+        if len(bibcodes) > current_app.config['MAX_INPUT']:
+            return {'msg': 'number of submitted bibcodes exceeds maximum number'}, 400
         try:
             results = generate_metrics(bibcodes=bibcodes)
         except Exception, err:
@@ -26,7 +28,7 @@ class Metrics(Resource):
 
 class PubMetrics(Resource):
     """Get metrics for a single publication (identified by its bibcode)"""
-    scopes = 'oauth:metrics:read'
+    scopes = ['oauth:metrics:read']
     def get(self, bibcode):
        try:
            results = generate_metrics(bibcodes=[bibcode], types='statistics,histograms')
