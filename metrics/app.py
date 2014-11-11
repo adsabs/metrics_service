@@ -10,8 +10,8 @@ def create_app():
   api.add_resource(UnixTime, '/time')
   api.add_resource(PrintArg,'/print/<string:arg>')
   api.add_resource(ExampleApiUsage,'/search')
-  api.add_resource(Metrics, '/metrics')
-  api.add_resource(PubMetrics, '/metrics/<string:bibcode>')
+  api.add_resource(Metrics, '/')
+  api.add_resource(PubMetrics, '/<string:bibcode>')
 
   app = Flask(__name__, static_folder=None)
   app.url_map.strict_slashes = False
