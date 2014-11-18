@@ -3,6 +3,7 @@ from flask import Flask, g
 from views import blueprint, Resources, Metrics, PubMetrics
 from flask.ext.restful import Api
 from client import Client
+from utils import db
 
 def create_app():
   api = Api(blueprint)
@@ -19,4 +20,5 @@ def create_app():
     pass
   app.register_blueprint(blueprint)
   app.client = Client(app.config['CLIENT'])
+  db.init_app(app)
   return app

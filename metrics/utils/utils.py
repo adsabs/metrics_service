@@ -11,14 +11,12 @@ from multiprocessing import Process, Queue, cpu_count
 import simplejson as json
 # modules for querying PostgreSQL
 from sqlalchemy import Column, Integer, String, DateTime, Boolean
-from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
+from sqlalchemy.ext.declarative import DeclarativeMeta
 from sqlalchemy.dialects import postgresql
-from sqlalchemy.orm import relationship, sessionmaker
-from sqlalchemy import create_engine
-#
 from flask import current_app
+from flask.ext.sqlalchemy import SQLAlchemy
 
-__all__ = ['get_metrics_data']
+db = SQLAlchemy()
 
 class PostgresQueryError(Exception):
     pass
@@ -40,9 +38,7 @@ class AlchemyEncoder(json.JSONEncoder):
 
         return json.JSONEncoder.default(self, obj)
 
-Base = declarative_base()
-
-class MetricsModel(Base):
+class MetricsModel(db.Model):
   __tablename__='metrics'
 
   id = Column(Integer,primary_key=True)
@@ -70,10 +66,7 @@ class MetricsDataHarvester(Process):
         Process.__init__(self)
         self.task_queue = task_queue
         self.result_queue = result_queue
-        engine = create_engine(current_app.config['SQLALCHEMY_DATABASE_URI'])
-        Base.metadata.create_all(engine)
-        DBSession = sessionmaker(bind=engine)
-        self.session = DBSession()
+        self.session = db.session()
     def run(self):
         while True:
             bibcode = self.task_queue.get()
