@@ -1,6 +1,7 @@
 werkzeug
 Flask>=0.9
 Flask-RESTful
+Flask-SQLAlchemy
 psycopg2
 SQLAlchemy
 numpy
