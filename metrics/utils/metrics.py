@@ -7,7 +7,6 @@ Created on Oct 29, 2014
 import os
 import operator
 import sys
-import time
 import itertools
 import simplejson as json
 from multiprocessing import Pool, current_process
