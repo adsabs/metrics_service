@@ -1,4 +1,5 @@
 import os
+from flask import Blueprint
 from flask import Flask, g
 from views import blueprint, Resources, Metrics, PubMetrics
 from flask.ext.restful import Api
