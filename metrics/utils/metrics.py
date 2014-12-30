@@ -43,6 +43,10 @@ def make_vectors(pubs,metrics_dict):
     """
     attr_list = []
     for bibcode in pubs:
+        if metrics_dict.get(bibcode,{}).get('reads',[]) == None:
+            metrics_dict[bibcode]['reads'] = []
+        if metrics_dict.get(bibcode,{}).get('downloads',[]) == None:
+            metrics_dict[bibcode]['downloads'] = []
         vector = [str(bibcode)]
         vector.append(int(metrics_dict.get(bibcode,{}).get('refereed',False)))
         vector.append(metrics_dict.get(bibcode,{}).get('citation_num',0))
