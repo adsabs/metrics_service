@@ -110,7 +110,10 @@ def get_metrics_data(**args):
     while num_jobs:
         data = results.get()
         if 'Exception' in data:
-            raise PostgresQueryError, data
+            if 'row' in data:
+                raise PostgresQueryError, 'record with missing metrics data'
+            else:
+                raise PostgresQueryError, data
         try:
             rn_citations, rn_hist, n_self = remove_self_citations(bibcodes,data)
             data['rn_citations'] = rn_citations

@@ -24,7 +24,10 @@ class Metrics(Resource):
         try:
             results = generate_metrics(bibcodes=bibcodes)
         except Exception, err:
-            return {'msg': 'Unable to get results! (%s)' % err}, 500
+            if str(err) == 'record with missing metrics data':
+                return {'msg': 'Unable to get results! (%s)' % err}, 400
+            else:
+                return {'msg': 'Unable to get results! (%s)' % err}, 500
 
         return results
 
@@ -35,7 +38,11 @@ class PubMetrics(Resource):
        try:
            results = generate_metrics(bibcodes=[bibcode], types='statistics,histograms')
        except Exception, err:
-           return {'msg': 'Unable to get results! (%s)' % err}, 500
+            if str(err) == 'record with missing metrics data':
+                return {'msg': 'Unable to get results! (%s)' % err}, 400
+            else:
+                return {'msg': 'Unable to get results! (%s)' % err}, 500
+
        return results
 
 class Resources(Resource):
