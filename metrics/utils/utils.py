@@ -78,7 +78,7 @@ class MetricsDataHarvester(Process):
                 self.result_queue.put(json.loads(metr_data))
             except Exception, e:
                 sys.stderr.write("Postgres metrics data query for %s blew up (%s)" % (bibcode,e))
-                self.result_queue.put("Exception! Postgres metrics data query for %s blew up (%s)" % (bibcode,e))
+                self.result_queue.put("Exception! Bibcode: %s" % bibcode)
         return
 
 def get_metrics_data(**args):
@@ -110,10 +110,8 @@ def get_metrics_data(**args):
     while num_jobs:
         data = results.get()
         if 'Exception' in data:
-            if 'row' in data:
-                raise PostgresQueryError, 'record with missing metrics data'
-            else:
-                raise PostgresQueryError, data
+            num_jobs -= 1
+            continue
         try:
             rn_citations, rn_hist, n_self = remove_self_citations(bibcodes,data)
             data['rn_citations'] = rn_citations

@@ -75,6 +75,8 @@ def get_attributes(args):
     if len(bibcodes_without_authnums):
         sys.stderr.write("Bibcodes found with author number equal to zero: %s" % ",".join(bibcodes_without_authnums))
     bibcodes = filter(lambda a: a not in bibcodes_without_authnums, bibcodes)
+    # Record all skipped bibcodes
+    skipped_bibcodes = missing_bibcodes + bibcodes_without_authnums
     # Get the number of citing papers
     Nciting = len(list(set(itertools.chain(*map(lambda a: a['citations'], metrics_data.values())))))
     # Nciting_ref refers to citation to the refereed papers in the set
@@ -85,7 +87,7 @@ def get_attributes(args):
     # will make e.g. the calculation of 'h' trivial
     attr_list = sort_list_of_lists(attr_list,2)
 
-    return attr_list,Nciting,Nciting_ref
+    return attr_list,Nciting,Nciting_ref,skipped_bibcodes
 
 # E. Function to call individual model data generation functions
 #    in parallel
@@ -97,6 +99,7 @@ def generate_data(model_class):
 #    In theory we could build in other formats by e.g. a 'format=foo' in the
 #    'args' and implementing an associated procedure in the method
 def format_results(data_dict,**args):
+    skipped = args.get('skipped',[])
     # We want to return JSON, and at the same time support backward compatibility
     # This is achieved by stucturing the resulting JSON into sections that
     # correspond with the output from the 'legacy' metrics module
@@ -117,13 +120,15 @@ def format_results(data_dict,**args):
     c = dict((k,v) for d in data_dict for (k,v) in d.items() if d['type'] == 'non_refereed_citation_histogram')
     doc['citation histogram'] = dict((n, ":".join(["%s:%s"%(x,y) for (x,y) in zip(a[n],b[n])])) for n in set(a)|set(b))
     doc['citation histogram']['type'] = "citation_histogram"
+    doc['number of skipped records'] = len(skipped)
+    doc['skipped records'] = skipped
     return doc
 
 # General metrics engine
 def generate_metrics(**args):
     # First we gather the necessary 'attributes' for all publications involved
     # (see above methods for more details)
-    attr_list,num_cit,num_cit_ref = get_attributes(args)
+    attr_list,num_cit,num_cit_ref,skipped_recs = get_attributes(args)
     # What types of metrics are we gather (everything by default)
     stats_models = []
     # Retrieve which types of metrics are to be calculated
@@ -140,6 +145,6 @@ def generate_metrics(**args):
     rez = po.map_async(generate_data, stats_models)
     model_results = rez.get()
     # Now shape the results in the final format
-    results = format_results(model_results)
+    results = format_results(model_results,skipped=skipped_recs)
     # Send the result back to our caller
     return results
