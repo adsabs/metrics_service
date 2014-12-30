@@ -15,6 +15,7 @@ blueprint = Blueprint(
 class Metrics(Resource):
     """computes all metrics on the POST body"""
     scopes = []
+    rate_limit = [1000,60*60*24]
     def post(self):
         if not request.json or not 'bibcodes' in request.json:
             return {'msg': 'no bibcodes found in POST body'}, 400
@@ -34,6 +35,7 @@ class Metrics(Resource):
 class PubMetrics(Resource):
     """Get metrics for a single publication (identified by its bibcode)"""
     scopes = []
+    rate_limit = [1000,60*60*24]
     def get(self, bibcode):
        try:
            results = generate_metrics(bibcodes=[bibcode], types='statistics,histograms')
