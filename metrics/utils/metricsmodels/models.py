@@ -158,7 +158,10 @@ class Metrics():
         # get the Tori index
         rn_citations = map(lambda a: a['rn_citations'], cls.metrics_data)
         auth_nums    = map(lambda a: 1.0/float(a['author_num']), cls.metrics_data)
-        tori = vector_product(rn_citations,auth_nums)
+        if cls.include_tori:
+            tori = vector_product(rn_citations,auth_nums)
+        else:
+            tori = "NA"
         try:
             read10_reads = map(lambda a: a[7][-2], cls.reads10data)
             read10_auths = map(lambda a: 1.0/float(a[4]), cls.reads10data)
@@ -175,8 +178,11 @@ class Metrics():
         cls.i10_index = len(filter(lambda a: a >= 10, citations))
         cls.i100_index= len(filter(lambda a: a >= 100, citations))
         cls.e_index = float('%.1f' % round(e,1))
-        cls.tori = float('%.1f' % round(tori,1))
-        cls.riq  = float('%.1f' % round(riq,1))
+        if cls.include_tori:
+            cls.tori = float('%.1f' % round(tori,1))
+            cls.riq  = float('%.1f' % round(riq,1))
+        else:
+            cls.tori = cls.riq = "NA"
         cls.read10 = int(round(read10))
         cls.number_of_self_citations = number_of_self_citations
 
@@ -282,7 +288,10 @@ class TimeSeries():
                     read10 = vector_product(read10_reads, read10_auths)
                 except:
                     read10 = 0
-            tori = sum([value for d in cls.metrics_data for (yr,value) in d['rn_citations_hist'].items() if int(yr) <= year])
+            if cls.include_tori:
+                tori = sum([value for d in cls.metrics_data for (yr,value) in d['rn_citations_hist'].items() if int(yr) <= year])
+            else:
+                tori = "NA"
             new_list = get_subset(cls.attributes,year)
             new_list = sort_list_of_lists(new_list,2)
             citations = map(lambda a: a[2], new_list)
@@ -302,7 +311,10 @@ class TimeSeries():
             i10 = len(filter(lambda a: a >= 10, citations))
             i100= len(filter(lambda a: a >= 100, citations))
             m = float(h)/float(TimeSpan)
-            roq = int(1000.0*math.sqrt(float(tori))/float(TimeSpan))
+            if cls.include_tori:
+                roq = int(1000.0*math.sqrt(float(tori))/float(TimeSpan))
+            else:
+                roq = "NA"
             indices = "%s:%s:%s:%s:%s:%s:%s:%s" % (h,g,i10,tori,m,roq,i100,int(round(read10)*0.1))
             cls.series[str(year)] = indices
 

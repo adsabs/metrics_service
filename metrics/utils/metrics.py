@@ -131,11 +131,14 @@ def generate_metrics(**args):
     stats_models = []
     # Retrieve which types of metrics are to be calculated
     model_types = args.get('types',current_app.config['METRICS_DEFAULT_MODELS'])
+    # Include Tori calculation?
+    include_tori = args.get('tori',False)
     # Instantiate the metrics classes, defined in the 'models' module
     for model_class in metricsmodels.data_models(models=model_types.split(',')):
         model_class.attributes = attr_list
         model_class.num_citing = num_cit
         model_class.num_citing_ref = num_cit_ref
+        model_class.include_tori = include_tori
         model_class.results = {}
         stats_models.append(model_class)
     # The metrics calculations are sent off

@@ -20,10 +20,14 @@ class Metrics(Resource):
         if not request.json or not 'bibcodes' in request.json:
             return {'msg': 'no bibcodes found in POST body'}, 400
         bibcodes = map(str, request.json['bibcodes'])
+        try:
+            include_tori = request.json['tori']
+        except:
+            include_tori = False
         if len(bibcodes) > current_app.config['MAX_INPUT']:
             return {'msg': 'number of submitted bibcodes exceeds maximum number'}, 400
         try:
-            results = generate_metrics(bibcodes=bibcodes)
+            results = generate_metrics(bibcodes=bibcodes,tori=include_tori)
         except Exception, err:
             if str(err) == 'record with missing metrics data':
                 return {'msg': 'Unable to get results! (%s)' % err}, 400
