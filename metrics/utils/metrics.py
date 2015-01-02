@@ -9,8 +9,6 @@ import operator
 import sys
 import itertools
 import simplejson as json
-from multiprocessing import Pool, current_process
-from multiprocessing import Manager
 #
 from flask import current_app
 # methods to retrieve various types of data
@@ -140,10 +138,10 @@ def generate_metrics(**args):
         model_class.num_citing_ref = num_cit_ref
         model_class.results = {}
         stats_models.append(model_class)
-    # The metrics calculations are sent off in parallel
-    po = Pool()
-    rez = po.map_async(generate_data, stats_models)
-    model_results = rez.get()
+    # The metrics calculations are sent off
+    model_results = []
+    for model in stats_models:
+        model_results.append(generate_data(model))
     # Now shape the results in the final format
     results = format_results(model_results,skipped=skipped_recs)
     # Send the result back to our caller
