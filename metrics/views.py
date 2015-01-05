@@ -23,7 +23,7 @@ class Metrics(Resource):
         try:
             include_tori = request.json['tori']
         except:
-            include_tori = False
+            include_tori = True
         if len(bibcodes) > current_app.config['MAX_INPUT']:
             return {'msg': 'number of submitted bibcodes exceeds maximum number'}, 400
         try:
