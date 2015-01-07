@@ -5,7 +5,6 @@ Created on Oct 29, 2014
 '''
 import sys
 import os
-import simplejson as json
 from database import db
 
 metrics_fields = ['id','bibcode','refereed','rn_citations','rn_citation_data','rn_citations_hist',
