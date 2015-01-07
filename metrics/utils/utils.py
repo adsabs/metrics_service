@@ -6,12 +6,11 @@ Created on Oct 29, 2014
 import sys
 import os
 import simplejson as json
-from sqlalchemy import or_
+from database import db
 
-from database import db, AlchemyEncoder, MetricsModel
-
-class PostgresQueryError(Exception):
-    pass
+metrics_fields = ['id','bibcode','refereed','rn_citations','rn_citation_data','rn_citations_hist',
+                   'downloads','reads','an_citations','refereed_citation_num','citation_num','citations',
+                   'refereed_citations','author_num','an_refereed_citations']
 
 def get_metrics_data(**args):
     """
@@ -19,14 +18,12 @@ def get_metrics_data(**args):
     """
     bibcodes = args.get('bibcodes',[])
     metrics_data_dict = {}
-    querydata = []
-    for bibcode in bibcodes:
-        querydata.append(MetricsModel.bibcode=='%s'%bibcode)
-    condition = or_(*querydata)
-    results = db.session.query(MetricsModel).filter(condition).all()
+    SQL = "SELECT * FROM metrics WHERE bibcode IN (%s)" % ",".join(map(lambda a: "\'%s\'"%a,bibcodes))
+    results = db.session.execute(SQL)
     for result in results:
-        mdata = json.dumps(result, cls=AlchemyEncoder)
-        data = json.loads(mdata)
+        data = {}
+        for field in metrics_fields:
+            data[field] = result[metrics_fields.index(field)]
         try:
             rn_citations, rn_hist, n_self = remove_self_citations(bibcodes,data)
             data['rn_citations'] = rn_citations
