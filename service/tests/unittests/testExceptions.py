@@ -198,18 +198,6 @@ class TestBadRequests(TestCase):
     self.assertTrue('Error' in r.json)
     self.assertTrue(r.json.get('Error') == 'Unable to get results!')
 
-  def testNonExistingMetricsType(self):
-    '''When a non-existing metrics type is requested, an error should be returned'''
-    '''When more than the maximum input bibcodes are submitted an error should be returned'''
-    bibcodes = ["bibcode"]*(self.app.config.get('METRICS_MAX_SUBMITTED')+1)
-    r = self.client.post(
-          url_for('metrics.metrics'),
-          content_type='application/json',
-          data=json.dumps({'bibcodes':['foo','bar'],'types':['foo']}))
-    self.assertTrue(r.status_code == 200)
-    self.assertTrue('Error' in r.json)
-    self.assertTrue(r.json.get('Error') == 'Unable to get results!')
-
 class TestMetricsSingleInvalidBibcode(TestCase):
   '''Check getting exception for a single bibcode'''
   def create_app(self):
