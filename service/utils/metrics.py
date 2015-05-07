@@ -455,8 +455,8 @@ def get_time_series(identifiers,bibcodes,data=None, usagedata=None, tori_data=No
         self_cits = get_selfcitations(identifiers,bibcodes)[1]
     self_citations = set((itertools.chain(*[x[0] for x in self_cits])))
     if not tori_data and include_tori:
-        data = get_tori_data(identifiers)
-        tori_data = [p for p in list(itertools.chain(*[p.rn_citation_data for p in data if p.rn_citation_data])) if p['bibcode'] not in self_citations]
+        tdata = get_tori_data(identifiers)
+        tori_data = [p for p in list(itertools.chain(*[p.rn_citation_data for p in tdata if p.rn_citation_data])) if p['bibcode'] not in self_citations]
     # Determine the year range
     Nentries = datetime.now().year - 1996 + 1
     years = [int(b[:4]) for b in bibcodes]
