@@ -478,7 +478,7 @@ def get_time_series(identifiers,bibcodes,data=None, usagedata=None, tori_data=No
         i10[year] = len([c for c in citations if c >= 10])
         i100[year]= len([c for c in citations if c >= 100])
         if include_tori:
-            tori[year]= sum([r['auth_norm']*r['ref_norm'] for r in tori_data if int(r['bibcode'][:4]) <= year])
+            tori[year]= np.sum(np.array([r['auth_norm']*r['ref_norm'] for r in tori_data if int(r['bibcode'][:4]) <= year]))
 
     series['i10'] = i10
     series['i100']= i100
