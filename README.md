@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/adsabs/metrics_service.svg?branch=master)](https://travis-ci.org/adsabs/metrics_service)
-[![Coverage Status](https://coveralls.io/repos/adsabs/metrics_service/badge.svg?branch=master)](https://coveralls.io/r/adsabs/metrics_service?branch=master)
-`
+[![Coverage Status](https://coveralls.io/repos/adsabs/metrics_service/badge.svg)](https://coveralls.io/r/adsabs/metrics_service)
+
 Flask service implementation of the metrics service. Start with
 
 	python wsgi.py
