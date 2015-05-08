@@ -6,4 +6,5 @@ install:
 script:
   - coverage run -p --source=. service/tests/run_tests.py
 after_success:
+  - coverage combine
   - coveralls
