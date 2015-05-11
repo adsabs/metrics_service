@@ -456,7 +456,7 @@ def get_time_series(identifiers,bibcodes,data=None, usagedata=None, tori_data=No
     self_citations = set((itertools.chain(*[x[0] for x in self_cits])))
     if not tori_data and include_tori:
         tdata = get_tori_data(identifiers)
-        tori_data = [p for p in list(itertools.chain(*[p.rn_citation_data for p in tdata if p.rn_citation_data])) if p['bibcode'] not in self_citations]
+        tori_data = [p for p in list(itertools.chain(*[p.rn_citation_data for p in tdata if p.rn_citation_data])) if p['bibcode'] not in self_citations and 'pubyear' in p]
     # Determine the year range
     Nentries = datetime.now().year - 1996 + 1
     years = [int(b[:4]) for b in bibcodes]
@@ -478,7 +478,7 @@ def get_time_series(identifiers,bibcodes,data=None, usagedata=None, tori_data=No
         i10[year] = len([c for c in citations if c >= 10])
         i100[year]= len([c for c in citations if c >= 100])
         if include_tori:
-            tori[year]= np.sum(np.array([r['auth_norm']*r['ref_norm'] for r in tori_data if int(r['bibcode'][:4]) <= year]))
+            tori[year]= np.sum(np.array([r['auth_norm']*r['ref_norm'] for r in tori_data if r['pubyear'] <= year and r['cityear'] <= year]))
 
     series['i10'] = i10
     series['i100']= i100
