@@ -315,7 +315,7 @@ for b,v in testdata.items():
     data['citation_num'] = len(v['citations'])
     data['refereed_citation_num'] = len(v['refereed_citations'])
     for cit in v['citations']:
-        citdata.append({'bibcode':cit, 'ref_norm': 1.0/float(max(5,refnums[cit])), 'auth_norm':1.0/float(v['author_num'])})
+        citdata.append({'bibcode':cit, 'ref_norm': 1.0/float(max(5,refnums[cit])), 'auth_norm':1.0/float(v['author_num']), 'pubyear':int(b[:4]), 'cityear':int(c[:4])})
     data['rn_citation_data'] = citdata
     with open(ofile, 'wb') as fp:
         json.dump(data, fp)

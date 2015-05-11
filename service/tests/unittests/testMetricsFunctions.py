@@ -471,10 +471,9 @@ class TestTimeSeries(TestCase):
         serie = {y:ts[indicator][y] for y in yrange}
         expected = {int(k):v for k,v in expected_results['time series'][indicator].items()} 
         self.assertEqual(serie, expected)
-#    serie = {y:ts['tori'][y] for y in yrange}
-#    expected = {int(k):v for k,v in expected_results['time series']['tori'].items()}
-#    print [np.allclose([serie[y]], expected[y]) for y in yrange]
-#    print [(serie[y],expected[y]) for y in yrange]
+    serie = {y:ts['tori'][y] for y in yrange}
+    expected = {int(k):v for k,v in expected_results['time series']['tori'].items()}
+    self.assertTrue ('False' not in [np.allclose([serie[y]], expected[y]) for y in yrange])
 
 if __name__ == '__main__':
   unittest.main(verbosity=2)
