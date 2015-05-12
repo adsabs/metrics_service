@@ -423,7 +423,7 @@ def get_tori(identifiers,bibcodes, self_cits=None):
         self_cits = get_selfcitations(identifiers,bibcodes)[1]
     self_citations = set((itertools.chain(*[x[0] for x in self_cits])))
     # Now we can calculate the Tori index
-    tori_data = [p for p in list(itertools.chain(*[p.rn_citation_data for p in data if p.rn_citation_data])) if p['bibcode'] not in self_citations]
+    tori_data = [p for p in list(itertools.chain(*[p.rn_citation_data for p in data if p.rn_citation_data])) if p['bibcode'] not in self_citations and 'pubyear' in p]
     tori_data_ref = [p for p in list(itertools.chain(*[p.rn_citation_data for p in data if p.refereed and p.rn_citation_data])) if p['bibcode'] not in self_citations]
     try:
         tori = np.sum(np.array([r['auth_norm']*r['ref_norm'] for r in tori_data]))
