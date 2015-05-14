@@ -3,6 +3,8 @@ Flask-RESTful
 Flask-SQLAlchemy
 Flask-Testing
 flask-discoverer
+Flask-Script
+Flask-Migrate
 werkzeug
 psycopg2
 SQLAlchemy
