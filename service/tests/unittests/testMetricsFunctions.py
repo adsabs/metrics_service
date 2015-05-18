@@ -118,7 +118,7 @@ class TestRecordInfoFunction(TestCase):
   def test_get_record_info_from_bibcodes(self):
     '''Test getting record info when specifying bibcodes'''
     from utils.metrics import get_record_info
-    bibs,IDs,missing = get_record_info(bibcodes=testset,query=None)
+    bibs,bibs_ref,IDs,missing = get_record_info(bibcodes=testset,query=None)
     # The list of bibcodes returned should be equal to the test set
     self.assertEqual(sorted(map(str,bibs)), sorted(testset))
     # The list IDs should be a list of integers
@@ -128,7 +128,7 @@ class TestRecordInfoFunction(TestCase):
     self.assertEqual(missing, [])
     # If we add a non-existing bibcode to the test set, it should get
     # returned in the 'missing' list
-    bibs,IDs,missing = get_record_info(bibcodes=testset + ['foo'],query=None)
+    bibs,bibs_ref,IDs,missing = get_record_info(bibcodes=testset + ['foo'],query=None)
     self.assertEqual(missing, ['foo'])
 
   @httpretty.activate
@@ -145,7 +145,7 @@ class TestRecordInfoFunction(TestCase):
             "params":{ "fl":"bibcode", "indent":"true", "wt":"json", "q":"*"}},
             "response":{"numFound":10456930,"start":0,"docs":%s
             }}"""%json.dumps(mockdata))
-    bibs,IDs,missing = get_record_info(bibcodes=None,query="foo")
+    bibs,bibs_ref,IDs,missing = get_record_info(bibcodes=None,query="foo")
     # The list IDs should be a list of integers
     self.assertEqual(isinstance(IDs, list),True)
     self.assertTrue(False not in [isinstance(x,int) for x in IDs])
@@ -261,8 +261,10 @@ class TestCitationStatsFunction(TestCase):
   def test_get_citation_stats(self):
     '''Test getting citation stats'''
     from utils.metrics import get_citation_stats
+    from utils.metrics import get_record_info
+    bibs,bibs_ref,IDs,missing = get_record_info(bibcodes=testset,query=None)
     # We use mock data, so not important that we feed bibcodes instead of IDs
-    cs, csr, data,selfcits,citdata = get_citation_stats(testset,testset)
+    cs, csr, data,selfcits,citdata = get_citation_stats(testset,testset,bibs_ref)
     # Check the citation stats with expected results
     citation_checks = ['number of citing papers', 'total number of citations', 
         'number of self-citations', 'total number of refereed citations',

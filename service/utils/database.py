@@ -40,11 +40,11 @@ class MetricsModel(db.Model):
 
 def get_identifiers(bibcodes):
     bibstr = ",".join(map(lambda a: "\'%s\'"%a,bibcodes))
-    rawSQL = "SELECT id,bibcode FROM metrics WHERE bibcode = ANY (ARRAY[%s]) ORDER BY citation_num DESC"
+    rawSQL = "SELECT id,bibcode,refereed FROM metrics WHERE bibcode = ANY (ARRAY[%s]) ORDER BY citation_num DESC"
     SQL = rawSQL % bibstr
     db.metrics = Bind('metrics')
     results = db.metrics.execute(SQL)
-    return dict([(r.bibcode,r.id) for r in results])
+    return [(r.bibcode, r.id, r.refereed) for r in results]
 
 def get_basic_stats_data(IDs):
     IDstr = ",".join(map(lambda a: "(%s)"%a,IDs))

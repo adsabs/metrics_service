@@ -59,7 +59,7 @@ def generate_metrics(**args):
         return result
     tori = args.get('tori',True)
     # First retrieve the data we need for our calculations
-    bibcodes, identifiers, skipped = get_record_info(bibcodes=args.get('bibcodes',[]),query=args.get('query',None))
+    bibcodes, bibcodes_ref, identifiers, skipped = get_record_info(bibcodes=args.get('bibcodes',[]),query=args.get('query',None))
     # If no identifiers were returned, return empty results
     if len(identifiers) == 0:
         return result
@@ -72,7 +72,7 @@ def generate_metrics(**args):
         result['basic stats'] = basic_stats
         result['basic stats refereed'] = basic_stats_refereed    
     if 'citations' in metrics_types:
-        cite_stats, cite_stats_refereed,citdata,selfcits,citlists = get_citation_stats(identifiers,bibcodes)
+        cite_stats, cite_stats_refereed,citdata,selfcits,citlists = get_citation_stats(identifiers, bibcodes, bibcodes_ref)
         result['citation stats'] = cite_stats
         result['citation stats refereed'] = cite_stats_refereed
     if 'histograms' in metrics_types:
@@ -111,10 +111,11 @@ def get_record_info(**args):
     # Did we get bibcodes?
     if args.get('bibcodes',[]):
         IDmap = get_identifiers(args['bibcodes'])
-        IDs = IDmap.values()
-        bibs = IDmap.keys()
+        IDs = [x[1] for x in IDmap]
+        bibs= [x[0] for x in IDmap]
+        bibs_ref = [x[0] for x in IDmap if x[2]]
         missing = [b for b in args['bibcodes'] if b not in bibs]
-        return bibs, IDs, missing
+        return bibs, bibs_ref, IDs, missing
     # If we received a query, retrieve the associated bibcodes from Solr
     elif args.get('query',None):
         bibcodes = []
@@ -128,10 +129,11 @@ def get_record_info(**args):
         resp = response.json()
         biblist = [d['bibcode'] for d in resp['response']['docs'] if 'bibcode' in d]
         IDmap = get_identifiers(biblist)
-        IDs = IDmap.values()
-        bibs = IDmap.keys()
+        IDs = [x[1] for x in IDmap]
+        bibs= [x[0] for x in IDmap]
+        bibs_ref = [x[0] for x in IDmap if x[2]]
         missing = [b for b in biblist if b not in bibs]
-        return bibs, IDs, missing
+        return bibs, bibs_ref, IDs, missing
     else:
         return {"Error": "Unable to get results!", "Error Info": "Unsupported metrics request", "Status Code": 200}
 
@@ -210,7 +212,7 @@ def get_basic_stats(identifiers):
     return bs, bsr, data
 
 ## The citation stats function gets statistics for citations
-def get_citation_stats(identifiers,bibcodes):
+def get_citation_stats(identifiers,bibcodes, bibcodes_ref):
     data = selfcits = citdata = None
     # citation stats for all publications
     cs = {}
@@ -219,6 +221,12 @@ def get_citation_stats(identifiers,bibcodes):
     # Get the data to compute the citation statistics
     # First get data with just the numbers
     data = get_citation_data(identifiers)
+    Nzero = len(bibcodes) - len(data)
+    Nzero_ref = len(bibcodes_ref) - len([p.citation_num for p in data if p.refereed])
+    citnums = [p.citation_num for p in data] + [0]*Nzero
+    ref_citnums = [p.refereed_citation_num for p in data] + [0]*Nzero
+    citnums_ref = [p.citation_num for p in data if p.refereed] + [0]*Nzero_ref
+    ref_citnums_ref = [p.refereed_citation_num for p in data if p.refereed] + [0]*Nzero_ref
     # Next, get more detailed citation information (with data to be used later on)
     # citdata    : data structure with citation data for reuse later on
     # selfcits   : data structure with self-citations
@@ -237,11 +245,11 @@ def get_citation_stats(identifiers,bibcodes):
     cs['total number of citations'] = np.sum([p.citation_num for p in data] or [0])
     csr['total number of citations']= np.sum([p.citation_num for p in data if p.refereed] or [0])
     ## Average number of citations
-    cs['average number of citations'] = np.mean([p.citation_num for p in data] or [0])
-    csr['average number of citations']= np.mean([p.citation_num for p in data if p.refereed] or [0])
+    cs['average number of citations'] = np.mean(citnums or [0])
+    csr['average number of citations']= np.mean(citnums_ref or [0])
     ## Median number of citations
-    cs['median number of citations'] = np.median([p.citation_num for p in data] or [0])
-    csr['median number of citations']= np.median([p.citation_num for p in data if p.refereed]or [0])
+    cs['median number of citations'] = np.median(citnums or [0])
+    csr['median number of citations']= np.median(citnums_ref or [0])
     ## Normalized number of citations
     cs['normalized number of citations'] = np.sum([float(p.citation_num)/float(p.author_num) for p in data] or [0])
     csr['normalized number of citations']= np.sum([float(p.citation_num)/float(p.author_num) for p in data if p.refereed] or [0])
@@ -249,10 +257,10 @@ def get_citation_stats(identifiers,bibcodes):
     ## 
     cs['total number of refereed citations'] = np.sum([p.refereed_citation_num for p in data]or [0])
     csr['total number of refereed citations']= np.sum([p.refereed_citation_num for p in data if p.refereed] or [0])
-    cs['average number of refereed citations'] = np.mean([p.refereed_citation_num for p in data] or [0])
-    csr['average number of refereed citations']= np.mean([p.refereed_citation_num for p in data if p.refereed] or [0])
-    cs['median number of refereed citations'] = np.median([p.refereed_citation_num for p in data] or [0])
-    csr['median number of refereed citations']= np.median([p.refereed_citation_num for p in data if p.refereed] or [0])
+    cs['average number of refereed citations'] = np.mean(ref_citnums or [0])
+    csr['average number of refereed citations']= np.mean(ref_citnums_ref or [0])
+    cs['median number of refereed citations'] = np.median(ref_citnums or [0])
+    csr['median number of refereed citations']= np.median(ref_citnums_ref or [0])
     cs['normalized number of refereed citations'] = np.sum([float(p.refereed_citation_num)/float(p.author_num) for p in data] or [0])
     csr['normalized number of refereed citations']= np.sum([float(p.refereed_citation_num)/float(p.author_num) for p in data if p.refereed] or [0])
     # Send the results back
