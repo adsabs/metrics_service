@@ -130,9 +130,11 @@ class TestIDRetrieval(TestCase):
     data = get_identifiers(testset)
     # We are expecting data to be a dictionary with bibcodes as keys and integers as values
     # (don't really care what the actual values are)
-    self.assertEqual(isinstance(data, dict),True)
-    self.assertTrue(False not in [isinstance(x,unicode) and len(x) == 19 for x in data.keys()])
-    self.assertTrue(False not in [isinstance(x,int) for x in data.values()])
+    self.assertEqual(isinstance(data, list),True)
+    self.assertTrue(False not in [len(x) == 3 for x in data])
+    self.assertTrue(False not in [isinstance(x[0],unicode) and len(x[0]) == 19 for x in data])
+    self.assertTrue(False not in [isinstance(x[1],int) for x in data])
+    self.assertTrue(False not in [isinstance(x[2],bool) for x in data])
 
 class TestBasicStatsDataRetrieval(TestCase):
   '''Check if the basic stats data retrieval function returns expected results'''
