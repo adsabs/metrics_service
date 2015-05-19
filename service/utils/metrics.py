@@ -395,7 +395,7 @@ def get_indicators(identifiers, data=None, usagedata=None):
     # The number of paper with 100 or more citations (i100)
     ind['i100']= len([x for x in citations if x[1] >= 100])
     # The m index is the g index divided by the range of publication years
-    yrange = datetime.now().year - min([int(p.bibcode[:4]) for p in data]) + 1
+    yrange = datetime.now().year - min([int(p.bibcode[:4]) for p in usagedata]) + 1
     ind['m'] = float(ind['h'])/float(yrange)
     # The read10 index is calculated from current reads for papers published
     # in the last 10 years, normalized by number of authors
@@ -413,7 +413,7 @@ def get_indicators(identifiers, data=None, usagedata=None):
     # The number of paper with 100 or more citations (i100)
     ind_ref['i100'] = len([x for x in citations if x[1] >= 100])
     # The m index is the g index divided by the range of publication years
-    yrange_ref = datetime.now().year - min([int(p.bibcode[:4]) for p in data if p.refereed]) + 1
+    yrange_ref = datetime.now().year - min([int(p.bibcode[:4]) for p in usagedata if p.refereed]) + 1
     ind_ref['m'] = float(ind_ref['h'])/float(yrange_ref)
     # The read10 index is calculated from current reads for papers published
     # in the last 10 years, normalized by number of authors
