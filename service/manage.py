@@ -7,9 +7,9 @@ app_ = create_app()
 
 app_.config.from_pyfile('config.py')
 try:
-  app_.config.from_pyfile('local_config.py')
+    app_.config.from_pyfile('local_config.py')
 except IOError:
-  pass
+    pass
 
 migrate = Migrate(app_, db)
 manager = Manager(app_)
