@@ -16,14 +16,15 @@ from math import sqrt
 from collections import defaultdict
 from operator import itemgetter
 from datetime import datetime
-from database import get_identifiers
-from database import get_basic_stats_data
-from database import get_citations
-from database import get_citation_data
-from database import get_publication_data
-from database import get_usage_data
-from database import get_indicator_data
-from database import get_tori_data
+from models import get_identifiers
+from models import get_basic_stats_data
+from models import get_citations
+from models import get_citation_data
+from models import get_publication_data
+from models import get_usage_data
+from models import get_indicator_data
+from models import get_tori_data
+from client import client
 
 # Helper methods
 
@@ -147,7 +148,7 @@ def get_record_info(**args):
                    request.headers.get('Authorization')}
         params = {'wt': 'json', 'q': q, 'fl': fl,
                   'rows': current_app.config['METRICS_MAX_HITS']}
-        response = current_app.config.get('METRICS_CLIENT').session.get(
+        response = client().get(
             current_app.config.get('METRICS_SOLRQUERY_URL'),
             params=params, headers=headers)
         if response.status_code != 200:

@@ -19,7 +19,7 @@ import app
 import json
 import httpretty
 import mock
-from utils.database import db, Bind, MetricsModel
+from models import db, Bind, MetricsModel
 
 current_year = datetime.now().year
 
@@ -152,7 +152,7 @@ class TestHirschExtreme(TestCase):
     def test_get_h_extreme(self):
         '''Test h index for only records where Ncits > Nrecs:
            h should equal Nrecs'''
-        from utils.metrics import get_indicators
+        from metrics import get_indicators
         indic, indic_ref = get_indicators(testset)
         self.assertEqual(indic['h'], len(testset))
         self.assertEqual(indic['g'], len(testset))
@@ -176,7 +176,7 @@ class TestHirschNoCits(TestCase):
     def test_get_h_nocits(self):
         '''Test h index for only records where Ncits > Nrecs:
            h should equal Nrecs'''
-        from utils.metrics import get_indicators
+        from metrics import get_indicators
         indic, indic_ref = get_indicators(testset)
         self.assertEqual(indic['h'], 0)
         self.assertEqual(indic['g'], 0)
@@ -199,7 +199,7 @@ class TestToriExtreme(TestCase):
 
     def test_get_tori(self):
         '''Test getting Tori when all citations are self-citations'''
-        from utils.metrics import get_tori
+        from metrics import get_tori
         tori, tori_ref, riq, riq_ref, d = get_tori(testset, testset)
         self.assertEqual(tori, 0)
 
@@ -221,7 +221,7 @@ class TestNoUsage(TestCase):
 
     def test_no_usage(self):
         '''Test getting usage histograms when there is no usage'''
-        from utils.metrics import get_usage_histograms
+        from metrics import get_usage_histograms
         # Expected histogram (for all)
         expected = {year: 0 for year in range(1996, current_year + 1)}
         # Get the reads histograms
@@ -258,7 +258,7 @@ class TestNoCitations(TestCase):
 
     def test_no_citations(self):
         '''Test getting citation histograms when there are no citations'''
-        from utils.metrics import get_citation_histograms
+        from metrics import get_citation_histograms
         years = [int(b[:4]) for b in testset]
         # Expected histogram (for all)
         expected = {year: 0 for year in range(min(years), current_year + 1)}
@@ -293,7 +293,7 @@ class TestNoRefereedCitations(TestCase):
 
     def test_no_refereed_citations(self):
         '''Test getting citation histograms when no refereed citations'''
-        from utils.metrics import get_citation_histograms
+        from metrics import get_citation_histograms
         years = [int(b[:4]) for b in testset]
         # Expected histogram (for all)
         expected = {year: 0 for year in range(min(years), current_year + 1)}
@@ -326,7 +326,7 @@ class TestNoTimeSeries(TestCase):
 
     def test_no_refereed_citations(self):
         '''Test getting time series when there is no usage and no citations'''
-        from utils.metrics import get_time_series
+        from metrics import get_time_series
         years = [int(b[:4]) for b in testset]
         # Expected histogram (for all)
         expected = {year: 0 for year in range(min(years), current_year + 1)}
@@ -355,7 +355,7 @@ class TestMetricsSingleBibcodeNoUsageCitations(TestCase):
     def test_get_metrics_single_invalid_bibcode(self):
         '''Test getting data for a single bibcode without
            usage and citations'''
-        url = url_for('metrics.pubmetrics', bibcode='1997BoLMe..85..475M')
+        url = url_for('pubmetrics', bibcode='1997BoLMe..85..475M')
         r = self.client.get(url)
         # The response should have a status code 200
         self.assertTrue(r.status_code == 200)

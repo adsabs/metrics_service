@@ -20,7 +20,7 @@ import app
 import json
 import httpretty
 import mock
-from utils.database import db, Bind, MetricsModel
+from models import db, Bind, MetricsModel
 
 testset = ['1997ZGlGl..33..173H', '1997BoLMe..85..475M',
            '1997BoLMe..85...81M', '2014bbmb.book..243K', '2012opsa.book..253H']
@@ -89,21 +89,21 @@ class TestHelperFunctions(TestCase):
 
     def test_chunks(self):
         '''Test the function that split a list up in a list of lists'''
-        from utils.metrics import chunks
+        from metrics import chunks
         list = ['a', 'b', 'c', 'd']
         expected = [['a'], ['b'], ['c'], ['d']]
         self.assertEqual([x for x in chunks(list, 1)], expected)
 
     def test_norm_histo(self):
         '''Test the function that converts a list of tuples to a histogram'''
-        from utils.metrics import get_norm_histo
+        from metrics import get_norm_histo
         l = [(2000, 1.5), (2000, 1.5), (2001, 1.7)]
         expected = {2000: 3.0, 2001: 1.7}
         self.assertEqual(get_norm_histo(l), expected)
 
     def test_merge_dictionaries(self):
         '''Test the function that merges two dictionaries'''
-        from utils.metrics import merge_dictionaries
+        from metrics import merge_dictionaries
         d1 = {1991: 1, 1993: 3}
         d2 = {1990: 0, 1992: 2}
         expected = {1990: 0, 1991: 1, 1992: 2, 1993: 3}
@@ -127,7 +127,7 @@ class TestRecordInfoFunction(TestCase):
 
     def test_get_record_info_from_bibcodes(self):
         '''Test getting record info when specifying bibcodes'''
-        from utils.metrics import get_record_info
+        from metrics import get_record_info
         bibs, bibs_ref, IDs, missing = get_record_info(
             bibcodes=testset, query=None)
         # The list of bibcodes returned should be equal to the test set
@@ -146,7 +146,7 @@ class TestRecordInfoFunction(TestCase):
     @httpretty.activate
     def test_get_record_info_from_query(self):
         '''Test getting record info when a query is supplied'''
-        from utils.metrics import get_record_info
+        from metrics import get_record_info
         httpretty.register_uri(
             httpretty.GET, self.app.config.get('METRICS_SOLRQUERY_URL'),
             content_type='application/json',
@@ -183,7 +183,7 @@ class TestSelfCitationFunction(TestCase):
 
     def test_get_selfcitations(self):
         '''Test getting self-citations'''
-        from utils.metrics import get_selfcitations
+        from metrics import get_selfcitations
         data, selfcits, Ns, Ns_r, Nc, Nc_r = get_selfcitations(
             [1, 2, 3], testset)
         # The 'data' returned is upposed to be a list of MetricsModel objects
@@ -238,7 +238,7 @@ class TestBasicStatsFunction(TestCase):
 
     def test_get_basic_stats(self):
         '''Test getting basic stats'''
-        from utils.metrics import get_basic_stats
+        from metrics import get_basic_stats
         # We use mock data, so not important that we feed bibcodes instead of
         # IDs
         bs, bsr, data = get_basic_stats(testset)
@@ -306,8 +306,8 @@ class TestCitationStatsFunction(TestCase):
 
     def test_get_citation_stats(self):
         '''Test getting citation stats'''
-        from utils.metrics import get_citation_stats
-        from utils.metrics import get_record_info
+        from metrics import get_citation_stats
+        from metrics import get_record_info
         bibs, bibs_ref, IDs, missing = get_record_info(
             bibcodes=testset, query=None)
         # We use mock data, so not important that we feed bibcodes instead of
@@ -349,7 +349,7 @@ class TestIndicatorsFunction(TestCase):
 
     def test_get_indicators(self):
         '''Test getting indicators'''
-        from utils.metrics import get_indicators
+        from metrics import get_indicators
         indic, indic_ref = get_indicators(testset)
         # Start comparing the results with computed values
         # Get the year range for comparison of 'm'
@@ -392,7 +392,7 @@ class TestToriFunction(TestCase):
 
     def test_get_tori(self):
         '''Test getting Tori and riq'''
-        from utils.metrics import get_tori
+        from metrics import get_tori
         tori, tori_ref, riq, riq_ref, d = get_tori(testset, testset)
         # First test the total Tori with the computed value
         self.assertAlmostEqual(tori, expected_results['indicators']['tori'])
@@ -424,7 +424,7 @@ class TestPublicationHistogram(TestCase):
 
     def test_publication_histograms(self):
         '''Test getting the publication histograms'''
-        from utils.metrics import get_publication_histograms
+        from metrics import get_publication_histograms
 
         hist = get_publication_histograms(testset)
         # First the publication histogram for all publications
@@ -466,7 +466,7 @@ class TestUsageHistogram(TestCase):
 
     def test_usage_histograms(self):
         '''Test getting the usage histograms'''
-        from utils.metrics import get_usage_histograms
+        from metrics import get_usage_histograms
         # First get the 'reads' histograms
         hist = get_usage_histograms(testset)
         # Every entry in the histogram for all papers should, by design,
@@ -523,7 +523,7 @@ class TestCitationHistogram(TestCase):
 
     def test_citation_histograms(self):
         '''Test getting the citation histograms'''
-        from utils.metrics import get_citation_histograms
+        from metrics import get_citation_histograms
 
         hist = get_citation_histograms(testset)
 
@@ -565,7 +565,7 @@ class TestTimeSeries(TestCase):
 
     def test_time_series(self):
         '''Test getting the time series'''
-        from utils.metrics import get_time_series
+        from metrics import get_time_series
 
         ts = get_time_series(testset, testset)
         # The time series get test over the range of publication years

@@ -1,17 +1,7 @@
-from flask import current_app, Blueprint, request
+from flask import current_app, request
 from flask.ext.restful import Resource
 from flask.ext.discoverer import advertise
-import time
-import inspect
-import sys
-
-from utils.metrics import generate_metrics
-
-blueprint = Blueprint(
-    'metrics',
-    __name__,
-    static_folder=None,
-)
+from metrics import generate_metrics
 
 allowed_types = [
     'basic', 'citations', 'histograms', 'indicators', 'timeseries']
