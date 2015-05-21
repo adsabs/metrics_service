@@ -19,7 +19,7 @@ import app
 import json
 import httpretty
 import mock
-from utils.database import db, Bind, MetricsModel
+from models import db, Bind, MetricsModel
 
 testset = ['1997ZGlGl..33..173H', '1997BoLMe..85..475M',
            '1997BoLMe..85...81M', '2014bbmb.book..243K', '2012opsa.book..253H']
@@ -97,7 +97,7 @@ class TestUnknownMetricsType(TestCase):
 
     def test_get_unknown_metrics_type(self):
         '''When no metrics types are specified an exception is thrown'''
-        from utils.metrics import generate_metrics
+        from metrics import generate_metrics
 
         res = generate_metrics(bibcodes=testset, metrics_types=[])
         # An unknown metrics type should return an empty dictionary
@@ -121,7 +121,7 @@ class TestNoIdentiersFound(TestCase):
 
     def test_no_identifiers_found(self):
         '''When no identifiers are found an exception is thrown'''
-        from utils.metrics import generate_metrics
+        from metrics import generate_metrics
 
         res = generate_metrics(bibcodes=testset, metrics_types=[])
         # No identifiers (i.e. no records found in database) should return
@@ -147,7 +147,7 @@ class TestNoRecordInfoFound(TestCase):
     def test_illegal_retrieval_method(self):
         '''No record info is found when an unsupported retrieval method
            is specified'''
-        from utils.metrics import get_record_info
+        from metrics import get_record_info
         data = get_record_info(other="foo")
         expected = {'Status Code': 200,
                     'Error Info': 'Unsupported metrics request',
@@ -157,7 +157,7 @@ class TestNoRecordInfoFound(TestCase):
     @httpretty.activate
     def test_solr_failure(self):
         '''No record info is found because Solr failed to return results'''
-        from utils.metrics import get_record_info
+        from metrics import get_record_info
         httpretty.register_uri(
             httpretty.GET, self.app.config.get('METRICS_SOLRQUERY_URL'),
             content_type='application/json',
@@ -192,7 +192,7 @@ class TestBadRequests(TestCase):
         '''When an empty list of bibcodes is submitted an error should
            be returned'''
         r = self.client.post(
-            url_for('metrics.metrics'),
+            url_for('metrics'),
             content_type='application/json',
             data=json.dumps({'bibcodes': []}))
         self.assertTrue(r.status_code == 200)
@@ -205,7 +205,7 @@ class TestBadRequests(TestCase):
         bibcodes = ["bibcode"] * \
             (self.app.config.get('METRICS_MAX_SUBMITTED') + 1)
         r = self.client.post(
-            url_for('metrics.metrics'),
+            url_for('metrics'),
             content_type='application/json',
             data=json.dumps({'bibcodes': bibcodes}))
         self.assertTrue(r.status_code == 200)
@@ -216,7 +216,7 @@ class TestBadRequests(TestCase):
         '''When no bibcodes nor a query is submitted an error should
            be returned'''
         r = self.client.post(
-            url_for('metrics.metrics'),
+            url_for('metrics'),
             content_type='application/json',
             data=json.dumps({}))
         self.assertTrue(r.status_code == 200)
@@ -241,7 +241,7 @@ class TestMetricsSingleInvalidBibcode(TestCase):
 
     def test_get_metrics_single_invalid_bibcode(self):
         '''Test getting exception for a single bibcode'''
-        url = url_for('metrics.pubmetrics', bibcode='foo')
+        url = url_for('pubmetrics', bibcode='foo')
         r = self.client.get(url)
         # The response should have a status code 200
         self.assertTrue(r.status_code == 200)

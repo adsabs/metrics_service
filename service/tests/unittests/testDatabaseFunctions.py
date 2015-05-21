@@ -17,7 +17,7 @@ import app
 import json
 import httpretty
 import mock
-from utils.database import db, Bind, MetricsModel
+from models import db, Bind, MetricsModel
 
 testset = ['1997ZGlGl..33..173H', '1997BoLMe..85..475M',
            '1997BoLMe..85...81M', '2014bbmb.book..243K', '2012opsa.book..253H']
@@ -68,7 +68,7 @@ class TestConfig(TestCase):
         required = ["METRICS_MAX_SUBMITTED", "METRICS_CHUNK_SIZE",
                     "METRICS_MAX_HITS", "METRICS_SOLRQUERY_URL",
                     "SQLALCHEMY_BINDS", "DISCOVERER_PUBLISH_ENDPOINT",
-                    "DISCOVERER_SELF_PUBLISH", "METRICS_CLIENT"]
+                    "DISCOVERER_SELF_PUBLISH"]
 
         missing = [x for x in required if x not in self.app.config.keys()]
         self.assertTrue(len(missing) == 0)
@@ -156,7 +156,7 @@ class TestIDRetrieval(TestCase):
 
     def test_get_identifiers(self):
         '''Test getting the identifiers for a set of bibcodes'''
-        from utils.database import get_identifiers
+        from models import get_identifiers
         data = get_identifiers(testset)
         # We are expecting data to be a dictionary with bibcodes as keys
         # and integers as values (don't really care what the actual values are)
@@ -186,7 +186,7 @@ class TestBasicStatsDataRetrieval(TestCase):
 
     def test_get_basic_stats_data(self):
         '''Test getting basic stats data'''
-        from utils.database import get_basic_stats_data
+        from models import get_basic_stats_data
         data = get_basic_stats_data(testset)
         # The most important thing here is to test that it is a list
         # of MetricsModel instances
@@ -214,7 +214,7 @@ class TestPublicationDataRetrieval(TestCase):
 
     def test_get_publication_data(self):
         '''Test getting publication data'''
-        from utils.database import get_publication_data
+        from models import get_publication_data
         data = get_publication_data(testset)
         # The most important thing here is to test that it is a list
         # of MetricsModel instances
@@ -242,7 +242,7 @@ class TestCitationDataRetrieval(TestCase):
 
     def test_get_citation_data(self):
         '''Test getting citation data'''
-        from utils.database import get_citation_data
+        from models import get_citation_data
         data = get_citation_data(testset)
         # The most important thing here is to test that it is a list
         # of MetricsModel instances
@@ -269,7 +269,7 @@ class TestCitationRetrieval(TestCase):
 
     def test_get_citations(self):
         '''Test getting citations'''
-        from utils.database import get_citations
+        from models import get_citations
         data = get_citations(testset)
         # The most important thing here is to test that it is a list
         # of MetricsModel instances
@@ -297,7 +297,7 @@ class TestIndicatorDataRetrieval(TestCase):
 
     def test_get_indicator_data(self):
         '''Test getting indicator data'''
-        from utils.database import get_indicator_data
+        from models import get_indicator_data
         data = get_indicator_data(testset)
         # The most important thing here is to test that it is a list
         # of MetricsModel instances
@@ -324,7 +324,7 @@ class TestUsageDataRetrieval(TestCase):
 
     def test_get_usage_data(self):
         '''Test getting usage data'''
-        from utils.database import get_usage_data
+        from models import get_usage_data
         data = get_usage_data(testset)
         # The most important thing here is to test that it is a list
         # of MetricsModel instances
@@ -351,7 +351,7 @@ class TestToriDataRetrieval(TestCase):
 
     def test_get_tori_data(self):
         '''Test getting tori data'''
-        from utils.database import get_tori_data
+        from models import get_tori_data
         data = get_tori_data(testset)
         # The most important thing here is to test that it is a list
         # of MetricsModel instances

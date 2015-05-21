@@ -15,7 +15,7 @@ import glob
 import httpretty
 import mock
 from datetime import datetime
-from utils.database import db, MetricsModel
+from models import db, MetricsModel
 
 testset = ['1997ZGlGl..33..173H', '1997BoLMe..85..475M',
            '1997BoLMe..85...81M', '2014bbmb.book..243K', '2012opsa.book..253H']
@@ -94,7 +94,7 @@ class TestBasicStatsBibcodes(TestCase):
     def test_get_basic_stats_bibcodes(self):
         '''Test getting just basic stats when valid bibcodes are submitted'''
         r = self.client.post(
-            url_for('metrics.metrics'),
+            url_for('metrics'),
             content_type='application/json',
             data=json.dumps({'bibcodes': testset, 'types': ['basic']}))
         self.assertTrue(r.status_code == 200)
@@ -148,7 +148,7 @@ class TestBasicStatsBibcodes(TestCase):
     def test_get_basic_stats_bibcodes_with_invalid(self):
         '''Test getting just basic stats with an additional invalid bibcode'''
         r = self.client.post(
-            url_for('metrics.metrics'),
+            url_for('metrics'),
             content_type='application/json',
             data=json.dumps({'bibcodes': testset + ['foo'],
                              'types': ['basic']}))
@@ -186,7 +186,7 @@ class TestBasicStatsQuery(TestCase):
             "response":{"numFound":10456930,"start":0,"docs":%s
             }}""" % json.dumps(mockdata))
         r = self.client.post(
-            url_for('metrics.metrics'),
+            url_for('metrics'),
             content_type='application/json',
             data=json.dumps({'query': 'foo', 'types': ['basic']}))
         self.assertTrue(r.status_code == 200)
@@ -222,7 +222,7 @@ class TestCitationStatsBibcodes(TestCase):
         '''Test getting just citation stats when valid bibcodes
            are submitted'''
         r = self.client.post(
-            url_for('metrics.metrics'),
+            url_for('metrics'),
             content_type='application/json',
             data=json.dumps({'bibcodes': testset, 'types': ['citations']}))
         self.assertTrue(r.status_code == 200)
@@ -272,7 +272,7 @@ class TestIndicatorsBibcodes(TestCase):
         '''Test getting just the indicators when valid bibcodes
            are submitted'''
         r = self.client.post(
-            url_for('metrics.metrics'),
+            url_for('metrics'),
             content_type='application/json',
             data=json.dumps({'bibcodes': testset, 'types': ['indicators']}))
         self.assertTrue(r.status_code == 200)
@@ -330,7 +330,7 @@ class TestPublicationHistogramsBibcodes(TestCase):
         '''Test getting just publication histograms when valid bibcodes
            are submitted'''
         r = self.client.post(
-            url_for('metrics.metrics'),
+            url_for('metrics'),
             content_type='application/json',
             data=json.dumps({'bibcodes': testset,
                              'types': ['histograms'],
@@ -379,7 +379,7 @@ class TestUsageHistogramsBibcodes(TestCase):
         '''Test getting just usage histograms when valid bibcodes
            are submitted'''
         r = self.client.post(
-            url_for('metrics.metrics'),
+            url_for('metrics'),
             content_type='application/json',
             data=json.dumps({'bibcodes': testset,
                              'types': ['histograms'],
@@ -418,7 +418,7 @@ class TestUsageHistogramsBibcodes(TestCase):
         # need to verify that the downloads histograms are the same as the
         # reads ones
         r = self.client.post(
-            url_for('metrics.metrics'),
+            url_for('metrics'),
             content_type='application/json',
             data=json.dumps({'bibcodes': testset,
                              'types': ['histograms'],
@@ -459,7 +459,7 @@ class TestCitationHistogramsBibcodes(TestCase):
         '''Test getting just citation histograms when valid bibcodes
            are submitted'''
         r = self.client.post(
-            url_for('metrics.metrics'),
+            url_for('metrics'),
             content_type='application/json',
             data=json.dumps({'bibcodes': testset,
                              'types': ['histograms'],
@@ -509,7 +509,7 @@ class TestAllHistogramsBibcodes(TestCase):
     def test_get_all_histograms_bibcodes(self):
         '''Test getting all histograms when no specific type is specified'''
         r = self.client.post(
-            url_for('metrics.metrics'),
+            url_for('metrics'),
             content_type='application/json',
             data=json.dumps({'bibcodes': testset, 'types': ['histograms']}))
         self.assertTrue(r.status_code == 200)
@@ -538,7 +538,7 @@ class TestTimeSeriesBibcodes(TestCase):
     def test_get_timeseries_bibcodes(self):
         '''Test getting just time series when valid bibcodes are submitted'''
         r = self.client.post(
-            url_for('metrics.metrics'),
+            url_for('metrics'),
             content_type='application/json',
             data=json.dumps({'bibcodes': testset, 'types': ['timeseries']}))
         self.assertTrue(r.status_code == 200)
@@ -576,7 +576,7 @@ class TestEverythingBibcodes(TestCase):
         '''Test getting everything when no specific metrics type
            is specified'''
         r = self.client.post(
-            url_for('metrics.metrics'),
+            url_for('metrics'),
             content_type='application/json',
             data=json.dumps({'bibcodes': testset}))
         self.assertTrue(r.status_code == 200)
@@ -608,7 +608,7 @@ class TestMetricsSingleBibcode(TestCase):
 
     def test_get_metrics_single_bibcode(self):
         '''Test getting metrics for a single bibcode'''
-        url = url_for('metrics.pubmetrics', bibcode='1997BoLMe..85..475M')
+        url = url_for('pubmetrics', bibcode='1997BoLMe..85..475M')
         r = self.client.get(url)
         # The response should have a status code 200
         self.assertTrue(r.status_code == 200)
