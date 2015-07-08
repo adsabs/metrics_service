@@ -15,7 +15,7 @@ import cytoolz as cy
 from math import sqrt
 from collections import defaultdict
 from operator import itemgetter
-from datetime import datetime
+from datetime import date, datetime
 from models import get_identifiers
 from models import get_basic_stats_data
 from models import get_citations
@@ -616,6 +616,15 @@ def get_time_series(identifiers, bibcodes, data=None, usagedata=None,
     Nentries = datetime.now().year - 1996 + 1
     years = [int(b[:4]) for b in bibcodes]
     yrange = range(min(years), datetime.now().year + 1)
+    d0 = date(datetime.now().year, 1, 1)
+    d1 = date(datetime.now().year, datetime.now().month, datetime.now().day)
+    d2 = date(datetime.now().year, 12, 31)
+    delta = (d1 - d0).days + 1
+    ndays = (d2 - d0).days + 1
+    try:
+       r10_corr = float(ndays)/float(delta)
+    except:
+       r10_corr = 1.0
     for year in yrange:
         biblist = [b for b in bibcodes if int(b[:4]) <= year]
         citations = sorted([len([int(c[:4]) for c in p.citations if int(
@@ -645,6 +654,7 @@ def get_time_series(identifiers, bibcodes, data=None, usagedata=None,
                                           r['pubyear'] <= year and
                                           r['cityear'] <= year]))
 
+    r10[datetime.now().year] = r10[datetime.now().year] * r10_corr
     series['i10'] = i10
     series['i100'] = i100
     series['h'] = h
