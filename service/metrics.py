@@ -526,7 +526,7 @@ def get_indicators(identifiers, data=None, usagedata=None):
     # in the last 10 years, normalized by number of authors
     year = datetime.now().year
     Nentries = year - 1996 + 1
-    ind['read10'] = sum([float(p.reads[-1]) / float(p.author_num)
+    ind['read10'] = sum([float(p.reads[-2]) / float(p.author_num)
                          for p in usagedata if
                          int(p.bibcode[:4]) > year - 10 and p.reads and
                          len(p.reads) == Nentries])
