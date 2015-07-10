@@ -445,6 +445,8 @@ def get_citation_histograms(identifiers, data=None):
     # Get necessary data if nothing was provided
     if not data:
         data = get_citations(identifiers)
+    if len(data) == 0:
+        data = get_citations(identifiers, no_zero=False)
     years = [int(p.bibcode[:4]) for p in data]
     # First gather all necessary data
     # refereed -> refereed
@@ -545,7 +547,7 @@ def get_indicators(identifiers, data=None, usagedata=None):
     ind_ref['i100'] = len([x for x in citations if x[1] >= 100])
     # The m index is the g index divided by the range of publication years
     yrange_ref = datetime.now().year - \
-        min([int(p.bibcode[:4]) for p in usagedata if p.refereed]) + 1
+        min([int(p.bibcode[:4]) for p in usagedata]) + 1
     ind_ref['m'] = float(ind_ref['h']) / float(yrange_ref)
     # The read10 index is calculated from current reads for papers published
     # in the last 10 years, normalized by number of authors
@@ -562,6 +564,8 @@ def get_indicators(identifiers, data=None, usagedata=None):
 def get_tori(identifiers, bibcodes, self_cits=None):
     # Get additional data necessary for Tori calculation
     data = get_tori_data(identifiers)
+    if len(data) == 0:
+        return 0, 0, 0, 0, []
     # If we did not get self-citations, retrieve them
     if not self_cits:
         self_cits = get_selfcitations(identifiers, bibcodes)[1]

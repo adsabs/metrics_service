@@ -88,10 +88,14 @@ def get_citation_data(IDs):
     return res
 
 
-def get_citations(IDs):
+def get_citations(IDs, no_zero=True):
     IDstr = ",".join(map(lambda a: "(%s)" % a, IDs))
-    rawSQL = "SELECT bibcode,refereed,citations,refereed_citations,author_num \
+    if no_zero:
+        rawSQL = "SELECT bibcode,refereed,citations,refereed_citations,author_num \
               FROM metrics WHERE id = ANY (VALUES %s) AND citation_num <> 0"
+    else:
+        rawSQL = "SELECT bibcode,refereed,citations,refereed_citations,author_num \
+              FROM metrics WHERE id = ANY (VALUES %s)"
     SQL = rawSQL % IDstr
     db.metrics = Bind('metrics')
     results = db.metrics.execute(SQL)
