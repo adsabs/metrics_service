@@ -587,7 +587,7 @@ def get_tori(identifiers, bibcodes, self_cits=None):
     # The riq index follows from the Tori index and the year range
     yrange = datetime.now().year - min([int(b[:4]) for b in bibcodes]) + 1
     yrange_ref = datetime.now().year - \
-        min([int(p.bibcode[:4]) for p in data if p.refereed]) + 1
+        min([int(p.bibcode[:4]) for p in data]) + 1
     riq = int(1000.0 * sqrt(float(tori)) / float(yrange))
     riq_ref = int(1000.0 * sqrt(float(tori_ref)) / float(yrange))
     # Send the results back
