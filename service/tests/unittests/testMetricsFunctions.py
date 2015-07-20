@@ -185,7 +185,13 @@ class TestRecordInfoFunction(TestCase):
             httpretty.GET, self.app.config.get('METRICS_SOLRQUERY_URL'),
             body=request_callback)
         get_record_info(
-            bibcodes=None, query={'q': 'foo', 'fq': 'title:boo', 'rows': '5000', 'fl': 'title,foo,bar'})
+            bibcodes=None, query={'q': 'foo', 'fq': 'title:boo', 'rows': '5000', 
+                                  'fl': 'title,foo,bar'})
+        
+        res = get_record_info(
+            bibcodes=None, query=[{'q': 'foo', 'fq': 'title:boo', 'rows': '5000', 
+                                  'fl': 'title,foo,bar'}])
+        self.assertEqual(res['Status Code'], 403)
         
 class TestSelfCitationFunction(TestCase):
 

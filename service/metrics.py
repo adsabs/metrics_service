@@ -150,7 +150,7 @@ def get_record_info(**args):
             params = dict(q) # clone it
         else:
             return {"Error": "Invalid value of the 'query' parameter: %s" % q,
-                    "Status Code": 404}
+                    "Status Code": 403}
 
         # override some values of the solr query
         params['fl'] = 'bibcode'
