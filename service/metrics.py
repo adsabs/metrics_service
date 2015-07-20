@@ -143,11 +143,22 @@ def get_record_info(**args):
     elif args.get('query', None):
         bibcodes = []
         q = args.get('query')
-        fl = "bibcode"
+        
+        if isinstance(q, basestring):
+            params = {'q': q}
+        elif isinstance(q, dict):
+            params = dict(q) # clone it
+        else:
+            return {"Error": "Invalid value of the 'query' parameter: %s" % q,
+                    "Status Code": 404}
+
+        # override some values of the solr query
+        params['fl'] = 'bibcode'
+        params['wt'] = 'json'
+        params['rows'] = max(min(int(params.get('rows', 10)), current_app.config['METRICS_MAX_SUBMITTED']), 1)
+
         headers = {'X-Forwarded-Authorization':
                    request.headers.get('Authorization')}
-        params = {'wt': 'json', 'q': q, 'fl': fl,
-                  'rows': current_app.config['METRICS_MAX_HITS']}
         response = client().get(
             current_app.config.get('METRICS_SOLRQUERY_URL'),
             params=params, headers=headers)

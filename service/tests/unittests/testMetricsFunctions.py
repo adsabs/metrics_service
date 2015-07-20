@@ -164,8 +164,29 @@ class TestRecordInfoFunction(TestCase):
         self.assertTrue(False not in [isinstance(x, int) for x in IDs])
         # The list of skipped bibcodes should be empty
         self.assertEqual(missing, [])
+        
+        # test we can send query with filters
+        max_row = self.app.config.get('METRICS_MAX_SUBMITTED')
+        def request_callback(request, uri, headers):
+            if request.querystring['q'] != ['foo'] or \
+                request.querystring['fq'] != ['title:boo'] or \
+                request.querystring['rows'] != [str(max_row)] or \
+                request.querystring['fl'] != ['bibcode']:
+                return (500, headers, "{'The query parameters were not passed properly'}")
+            return (200, headers, """{
+            "responseHeader":{
+            "status":0, "QTime":0,
+            "params":%s},
+            "response":{"numFound":10456930,"start":0,"docs":%s
+            }}""" % (json.dumps(request.querystring), json.dumps(mockdata))
+            )
 
-
+        httpretty.register_uri(
+            httpretty.GET, self.app.config.get('METRICS_SOLRQUERY_URL'),
+            body=request_callback)
+        get_record_info(
+            bibcodes=None, query={'q': 'foo', 'fq': 'title:boo', 'rows': '5000', 'fl': 'title,foo,bar'})
+        
 class TestSelfCitationFunction(TestCase):
 
     '''Check if the expected self-citations are returned'''

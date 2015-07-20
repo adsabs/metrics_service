@@ -195,7 +195,7 @@ class TestBadRequests(TestCase):
             url_for('metrics'),
             content_type='application/json',
             data=json.dumps({'bibcodes': []}))
-        self.assertTrue(r.status_code == 200)
+        self.assertTrue(r.status_code == 403)
         self.assertTrue('Error' in r.json)
         self.assertTrue(r.json.get('Error') == 'Unable to get results!')
 
@@ -208,7 +208,7 @@ class TestBadRequests(TestCase):
             url_for('metrics'),
             content_type='application/json',
             data=json.dumps({'bibcodes': bibcodes}))
-        self.assertTrue(r.status_code == 200)
+        self.assertTrue(r.status_code == 403)
         self.assertTrue('Error' in r.json)
         self.assertTrue(r.json.get('Error') == 'Unable to get results!')
 
@@ -219,7 +219,7 @@ class TestBadRequests(TestCase):
             url_for('metrics'),
             content_type='application/json',
             data=json.dumps({}))
-        self.assertTrue(r.status_code == 200)
+        self.assertTrue(r.status_code == 403)
         self.assertTrue('Error' in r.json)
         self.assertTrue(r.json.get('Error') == 'Unable to get results!')
 

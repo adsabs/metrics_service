@@ -35,19 +35,23 @@ class Metrics(Resource):
             histograms = []
         histograms = histograms or allowed_histograms
         if 'bibcodes' in request.json:
+            
+            if 'query' in request.json and request.json['query']:
+                return {'Error': 'Unable to get results!',
+                        'Error Info': 'Cannot send both bibcodes and query'}, 403
             bibcodes = map(str, request.json['bibcodes'])
             if len(bibcodes) > current_app.config.get('METRICS_MAX_SUBMITTED'):
                 return {'Error': 'Unable to get results!',
                         'Error Info': 'No results: number of submitted \
-                         bibcodes exceeds maximum number'}, 200
+                         bibcodes exceeds maximum number'}, 403
             elif len(bibcodes) == 0:
                 return {'Error': 'Unable to get results!',
-                        'Error Info': 'No bibcodes found in POST body'}, 200
+                        'Error Info': 'No bibcodes found in POST body'}, 403
         elif 'query' in request.json:
             query = request.json['query']
         else:
             return {'Error': 'Unable to get results!',
-                    'Error Info': 'Nothing to calculate metrics!'}, 200
+                    'Error Info': 'Nothing to calculate metrics!'}, 403
         results = generate_metrics(
             bibcodes=bibcodes, query=query, tori=include_tori,
             types=types, histograms=histograms)
