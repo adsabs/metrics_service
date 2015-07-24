@@ -68,6 +68,8 @@ def generate_metrics(**args):
     # First retrieve the data we need for our calculations
     bibcodes, bibcodes_ref, identifiers, skipped = get_record_info(
         bibcodes=args.get('bibcodes', []), query=args.get('query', None))
+    if len(bibcodes) == 1:
+        metrics_types = ['basic', 'histograms']
     # If no identifiers were returned, return empty results
     if len(identifiers) == 0:
         return result
@@ -88,11 +90,11 @@ def generate_metrics(**args):
     if 'histograms' in metrics_types:
         hists = {}
         hist_types = args.get('histograms')
-        if 'publications' in hist_types:
+        if 'publications' in hist_types and len(identifiers) > 1:
             hists['publications'] = get_publication_histograms(identifiers)
         if 'reads' in hist_types:
             hists['reads'] = get_usage_histograms(identifiers, data=usage_data)
-        if 'downloads' in hist_types:
+        if 'downloads' in hist_types and len(identifiers) > 1:
             hists['downloads'] = get_usage_histograms(
                 identifiers, usage_type='downloads', data=usage_data)
         if 'citations' in hist_types:
@@ -486,6 +488,8 @@ def get_citation_histograms(identifiers, data=None):
         nullhist = [(y, 0) for y in range(min_year, current_year + 1)]
     except:
         nullhist = [(y, 0) for y in range(min(years), current_year + 1)]
+    if len(nullhist) == 0:
+        nullhist = [(min(years), 0)]
     # Now create the histograms with zeroes for year without values
     ch['refereed to refereed'] = merge_dictionaries(dict(nullhist), rr_hist)
     ch['refereed to nonrefereed'] = merge_dictionaries(dict(nullhist), rn_hist)
