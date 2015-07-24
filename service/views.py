@@ -47,6 +47,9 @@ class Metrics(Resource):
             elif len(bibcodes) == 0:
                 return {'Error': 'Unable to get results!',
                         'Error Info': 'No bibcodes found in POST body'}, 403
+            elif len(bibcodes) == 1:
+                types=['basic', 'histograms']
+                histograms=['reads', 'citations']
         elif 'query' in request.json:
             query = request.json['query']
         else:
