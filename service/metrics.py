@@ -69,7 +69,7 @@ def generate_metrics(**args):
     bibcodes, bibcodes_ref, identifiers, skipped = get_record_info(
         bibcodes=args.get('bibcodes', []), query=args.get('query', None))
     if len(bibcodes) == 1:
-        metrics_types = ['basic', 'histograms']
+        metrics_types = ['basic', 'citations', 'histograms']
     # If no identifiers were returned, return empty results
     if len(identifiers) == 0:
         return result

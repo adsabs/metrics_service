@@ -48,7 +48,7 @@ class Metrics(Resource):
                 return {'Error': 'Unable to get results!',
                         'Error Info': 'No bibcodes found in POST body'}, 403
             elif len(bibcodes) == 1:
-                types=['basic', 'histograms']
+                types=['basic', 'citations', 'histograms']
                 histograms=['reads', 'citations']
         elif 'query' in request.json:
             query = request.json['query']
@@ -78,7 +78,7 @@ class PubMetrics(Resource):
 
     def get(self, bibcode):
         results = generate_metrics(bibcodes=[bibcode],
-                                   types=['basic', 'histograms'],
+                                   types=['basic', 'citations', 'histograms'],
                                    histograms=['reads', 'citations'])
         # If the results contain an error message something went boink
         if "Error" in results:
