@@ -613,11 +613,12 @@ class TestMetricsSingleBibcode(TestCase):
         # The response should have a status code 200
         self.assertTrue(r.status_code == 200)
         # The JSON should contain results for
-        expected_keys = [
-            'basic stats',
-            'histograms',
-            'skipped bibcodes',
-            'basic stats refereed']
+        expected_keys = [u'basic stats',
+                         u'citation stats refereed',
+                         u'histograms',
+                         u'citation stats',
+                         u'basic stats refereed',
+                         u'skipped bibcodes']
         self.assertEqual(r.json.keys(), expected_keys)
         # The histograms should consist of reads and citations
         self.assertEqual(r.json['histograms'].keys(), ['reads', 'citations'])
