@@ -9,10 +9,10 @@ werkzeug
 psycopg2
 SQLAlchemy
 simplejson>=3.3.0
-requests>=2.7.0
+requests
 numpy
 httpretty
 mock
 coveralls
 cytoolz
--e git+https://github.com/adsabs/flask-consulate@d25eb26154d9c55cd4d0f580744b6fc1add15b5e#egg=flask-consulate
+flask-consulate
