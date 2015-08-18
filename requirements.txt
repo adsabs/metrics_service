@@ -9,7 +9,7 @@ werkzeug
 psycopg2
 SQLAlchemy
 simplejson>=3.3.0
-requests
+requests>=2.7.0
 numpy
 httpretty
 mock
