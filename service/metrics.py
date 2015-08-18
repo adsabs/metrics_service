@@ -477,10 +477,20 @@ def get_citation_histograms(identifiers, data=None):
                  c not in p.refereed_citations],
                 1.0 / float(p.author_num)) for p in data if not p.refereed]
     # First construct the regular histograms
+    max_year = current_year
     rr_hist = cy.frequencies(list(itertools.chain(*[d[0] for d in rr_data])))
     rn_hist = cy.frequencies(list(itertools.chain(*[d[0] for d in rn_data])))
     nr_hist = cy.frequencies(list(itertools.chain(*[d[0] for d in nr_data])))
     nn_hist = cy.frequencies(list(itertools.chain(*[d[0] for d in nn_data])))
+    try:
+        max_year = max(max_year, max(rr_hist.keys()))
+        max_year = max(max_year, max(rn_hist.keys()))
+        max_year = max(max_year, max(nr_hist.keys()))
+        max_year = max(max_year, max(nn_hist.keys()))
+    except:
+        pass
+    if max_year > current_year:
+        current_year = max_year
     # Get the earliest citation
     try:
         min_year = min(
