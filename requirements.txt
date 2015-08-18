@@ -16,3 +16,4 @@ mock
 coveralls
 cytoolz
 flask-consulate
+nose
