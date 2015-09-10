@@ -1,6 +1,8 @@
 import requests
 from flask import current_app
 
+requests.packages.urllib3.disable_warnings()
+
 client = lambda: Client(current_app.config).session
 
 

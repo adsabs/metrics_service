@@ -2,6 +2,7 @@ from flask import current_app, request
 from flask.ext.restful import Resource
 from flask.ext.discoverer import advertise
 from metrics import generate_metrics
+import time
 
 allowed_types = [
     'basic', 'citations', 'histograms', 'indicators', 'timeseries']
@@ -18,6 +19,7 @@ class Metrics(Resource):
     def post(self):
         bibcodes = []
         query = None
+        stime = time.time()
         try:
             include_tori = request.json['tori']
         except:
@@ -35,23 +37,28 @@ class Metrics(Resource):
             histograms = []
         histograms = histograms or allowed_histograms
         if 'bibcodes' in request.json:
-            
             if 'query' in request.json and request.json['query']:
+                current_app.logger.warning('Metrics requested, but both bibcodes and query specified!')
                 return {'Error': 'Unable to get results!',
                         'Error Info': 'Cannot send both bibcodes and query'}, 403
             bibcodes = map(str, request.json['bibcodes'])
+            current_app.logger.info('Metrics requested for %s bibcodes'%len(bibcodes))
             if len(bibcodes) > current_app.config.get('METRICS_MAX_SUBMITTED'):
+                current_app.logger.warning('Metrics requested for %s bibcodes. Maximum is: %s!'%(len(bibcodes),current_app.config.get('METRICS_MAX_SUBMITTED')))
                 return {'Error': 'Unable to get results!',
                         'Error Info': 'No results: number of submitted \
                          bibcodes exceeds maximum number'}, 403
             elif len(bibcodes) == 0:
+                current_app.logger.warning('Metrics requested, but no bibcodes supplied!')
                 return {'Error': 'Unable to get results!',
                         'Error Info': 'No bibcodes found in POST body'}, 403
             elif len(bibcodes) == 1:
+                current_app.logger.debug('Metrics requested for single record')
                 types=['basic', 'citations', 'histograms']
                 histograms=['reads', 'citations']
         elif 'query' in request.json:
             query = request.json['query']
+            current_app.logger.info('Metrics requested for query: %s'%query)
         else:
             return {'Error': 'Unable to get results!',
                     'Error Info': 'Nothing to calculate metrics!'}, 403
@@ -60,11 +67,15 @@ class Metrics(Resource):
             types=types, histograms=histograms)
         # If the results contain an error message something went boink
         if "Error" in results:
+            current_app.logger.error('Metrics request request blew up')
             return results, 500
         # otherwise we have real results or an empty dictionary
         if results:
+            duration = time.time() - stime
+            current_app.logger.info('Metrics request successfully completed in %s real seconds'%duration)
             return results
         else:
+            current_app.logger.info('Metrics request returned empty result')
             return {'Error': 'Unable to get results!',
                     'Error Info': 'No data available to generate metrics'}, 200
 
