@@ -5,6 +5,7 @@ from flask.ext.restful import Api
 from flask.ext.discoverer import Discoverer
 from models import db
 from flask.ext.consulate import Consul, ConsulConnectionError
+import logging.config
 
 
 def create_app():
@@ -19,6 +20,10 @@ def create_app():
     Consul(app)
 
     load_config(app)
+
+    logging.config.dictConfig(
+        app.config['METRICS_LOGGING']
+    )
 
     api = Api(app)
     api.add_resource(Metrics, '/')
@@ -46,12 +51,12 @@ def load_config(app):
     try:
         app.config.from_pyfile('local_config.py')
     except IOError:
-        pass  # todo: log this failure
+        app.logger.warning("Could not load local_config.py")
 
     try:
         app.extensions['consul'].apply_remote_config()
     except ConsulConnectionError, e:
-        pass  # todo: log this failure
+        app.logger.error("Could not apply config from consul: {}".format(e))
 
 if __name__ == "__main__":
     app = create_app()
