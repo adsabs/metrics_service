@@ -1,3 +1,7 @@
+### 1.0.3
+
+* fixed calculation of READ10 indicator (metrics_service Github issue 76)
+
 ### 1.0.2
 
 * add logging

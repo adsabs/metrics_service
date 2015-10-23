@@ -553,10 +553,20 @@ def get_indicators(identifiers, data=None, usagedata=None):
     # in the last 10 years, normalized by number of authors
     year = datetime.now().year
     Nentries = year - 1996 + 1
-    ind['read10'] = sum([float(p.reads[-2]) / float(p.author_num)
+    ind['read10'] = sum([float(p.reads[-1]) / float(p.author_num)
                          for p in usagedata if
                          int(p.bibcode[:4]) > year - 10 and p.reads and
                          len(p.reads) == Nentries])
+    d0 = date(datetime.now().year, 1, 1)
+    d1 = date(datetime.now().year, datetime.now().month, datetime.now().day)
+    d2 = date(datetime.now().year, 12, 31)
+    delta = (d1 - d0).days + 1
+    ndays = (d2 - d0).days + 1
+    try:
+        r10_corr = float(ndays)/float(delta)
+    except:
+        r10_corr = 1.0
+    ind['read10'] = ind['read10']*r10_corr
     # Now all the values for the refereed publications
     citations = [(i + 1, n) for i, n in enumerate([p.citation_num for p in
                                                    data if p.refereed])]
@@ -582,6 +592,7 @@ def get_indicators(identifiers, data=None, usagedata=None):
                              for p in usagedata if p.refereed and
                              int(p.bibcode[:4]) > year - 10 and
                              p.reads and len(p.reads) == Nentries])
+    ind_ref['read10'] = ind_ref['read10']*r10_corr
     # Send results back
     return ind, ind_ref
 

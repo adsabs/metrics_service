@@ -9,7 +9,7 @@ from flask import url_for, Flask
 from sqlalchemy import Column, Integer, String, Float, DateTime, Boolean
 from sqlalchemy.dialects import postgresql
 import glob
-from datetime import datetime
+from datetime import date, datetime
 from math import sqrt
 import numpy as np
 import itertools
@@ -390,7 +390,16 @@ class TestIndicatorsFunction(TestCase):
         # By contruction of the reads data, Read10 follows thusly:
         # there are only two papers published in previous 10 years
         # and their current reads are all 1; one has 3 authors, the other 2
-        self.assertEqual(indic['read10'], 1.0 / float(3) + 1.0 / float(2))
+        d0 = date(datetime.now().year, 1, 1)
+        d1 = date(datetime.now().year, datetime.now().month, datetime.now().day)
+        d2 = date(datetime.now().year, 12, 31)
+        delta = (d1 - d0).days + 1
+        ndays = (d2 - d0).days + 1
+        try:
+            r10_corr = float(ndays)/float(delta)
+        except:
+            r10_corr = 1.0
+        self.assertEqual(indic['read10'], r10_corr / float(3) + r10_corr / float(2))
         # Now do the comparison for the refereed values
         # The year range is the same, because the oldest paper is refereed
         for indicator in indicators:
