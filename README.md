@@ -65,7 +65,7 @@ Each of these attributes contains specific data elements. The following overview
   * h
   * m
   * g
-  * read10
+  * read10 (Note: linearly extrapolated to end-of-year value)
   * tori
 
 ### 'histograms'
