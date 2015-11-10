@@ -1,3 +1,7 @@
+### 1.0.4
+
+* fixed anomalies when all papers are from the future (next year)
+
 ### 1.0.3
 
 * fixed calculation of READ10 indicator (metrics_service Github issue 76)

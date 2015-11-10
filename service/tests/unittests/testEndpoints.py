@@ -306,7 +306,7 @@ class TestIndicatorsBibcodes(TestCase):
             r10_corr = float(ndays)/float(delta)
         except:
             r10_corr = 1.0
-        self.assertEqual(indic['read10'], r10_corr / float(3) + r10_corr / float(2))
+        self.assertAlmostEqual(indic['read10'], r10_corr / float(3) + r10_corr / float(2))
         # Now do the comparison for the refereed values
         # The year range is the same, because the oldest paper is refereed
         for indicator in indicators:
