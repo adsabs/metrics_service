@@ -548,6 +548,8 @@ def get_indicators(identifiers, data=None, usagedata=None):
     # The m index is the g index divided by the range of publication years
     yrange = datetime.now().year - \
         min([int(p.bibcode[:4]) for p in usagedata]) + 1
+    # In the annoying case where all pubs are from next year, the above should be just 1
+    yrange = max(yrange, 1)
     ind['m'] = float(ind['h']) / float(yrange)
     # The read10 index is calculated from current reads for papers published
     # in the last 10 years, normalized by number of authors
@@ -583,6 +585,8 @@ def get_indicators(identifiers, data=None, usagedata=None):
     # The m index is the g index divided by the range of publication years
     yrange_ref = datetime.now().year - \
         min([int(p.bibcode[:4]) for p in usagedata]) + 1
+    # In the annoying case where all pubs are from next year, the above should be just 1
+    yrange_ref = max(yrange_ref, 1)
     ind_ref['m'] = float(ind_ref['h']) / float(yrange_ref)
     # The read10 index is calculated from current reads for papers published
     # in the last 10 years, normalized by number of authors
@@ -622,8 +626,10 @@ def get_tori(identifiers, bibcodes, self_cits=None):
         return 0, 0, 0, 0, tori_data
     # The riq index follows from the Tori index and the year range
     yrange = datetime.now().year - min([int(b[:4]) for b in bibcodes]) + 1
-    yrange_ref = datetime.now().year - \
-        min([int(p.bibcode[:4]) for p in data]) + 1
+    #yrange_ref = datetime.now().year - \
+    #    min([int(p.bibcode[:4]) for p in data]) + 1
+    # In the annoying case where all pubs are from next year, the above should be just 1
+    yrange = max(yrange, 1)
     riq = int(1000.0 * sqrt(float(tori)) / float(yrange))
     riq_ref = int(1000.0 * sqrt(float(tori_ref)) / float(yrange))
     # Send the results back
@@ -693,8 +699,12 @@ def get_time_series(identifiers, bibcodes, data=None, usagedata=None,
                                           r in tori_data if
                                           r['pubyear'] <= year and
                                           r['cityear'] <= year]))
-
-    r10[datetime.now().year] = r10[datetime.now().year] * r10_corr
+    # When all papers are from next year, the following would fail,
+    # and therefore we just skip it
+    try:
+        r10[datetime.now().year] = r10[datetime.now().year] * r10_corr
+    except:
+        pass
     series['i10'] = i10
     series['i100'] = i100
     series['h'] = h
