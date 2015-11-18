@@ -54,8 +54,14 @@ class Metrics(Resource):
                         'Error Info': 'No bibcodes found in POST body'}, 403
             elif len(bibcodes) == 1:
                 current_app.logger.debug('Metrics requested for single record')
-                types=['basic', 'citations', 'histograms']
-                histograms=['reads', 'citations']
+                if len(types) > 0:
+                    types = [t for t in types if t in ['basic', 'citations', 'histograms']]
+                if len(types) == 0:
+                    types=['basic', 'citations', 'histograms']
+                if len(histograms) > 0:
+                    histograms = [h for h in histograms if h in ['reads', 'citations']]
+                if len(histograms) == 0:
+                    histograms=['reads', 'citations']
         elif 'query' in request.json:
             query = request.json['query']
             current_app.logger.info('Metrics requested for query: %s'%query)
