@@ -1,3 +1,7 @@
+### 1.0.5
+
+* fixed POST output for single bibcode (metrics_service Github issue 81)
+
 ### 1.0.4
 
 * fixed anomalies when all papers are from the future (next year)

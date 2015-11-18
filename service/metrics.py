@@ -68,7 +68,7 @@ def generate_metrics(**args):
     # First retrieve the data we need for our calculations
     bibcodes, bibcodes_ref, identifiers, skipped = get_record_info(
         bibcodes=args.get('bibcodes', []), query=args.get('query', None))
-    if len(bibcodes) == 1:
+    if len(bibcodes) == 1 and len(metrics_types) == 0:
         metrics_types = ['basic', 'citations', 'histograms']
     # If no identifiers were returned, return empty results
     if len(identifiers) == 0:
