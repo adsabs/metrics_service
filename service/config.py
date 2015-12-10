@@ -21,7 +21,7 @@ METRICS_LOGGING = {
             'formatter': 'default',
             'level': 'INFO',
             'class': 'logging.handlers.TimedRotatingFileHandler',
-            'filename': '/tmp/metrics.log',
+            'filename': '/tmp/metrics_app.log',
         },
         'console': {
             'formatter': 'default',
