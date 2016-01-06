@@ -65,8 +65,7 @@ class TestConfig(TestCase):
 
     def test_config_values(self):
         '''Check if all required config variables are there'''
-        required = ["METRICS_MAX_SUBMITTED", "METRICS_CHUNK_SIZE",
-                    "METRICS_MAX_HITS", "METRICS_SOLRQUERY_URL",
+        required = ["METRICS_MAX_SUBMITTED", "METRICS_SOLRQUERY_URL",
                     "SQLALCHEMY_BINDS", "DISCOVERER_PUBLISH_ENDPOINT",
                     "DISCOVERER_SELF_PUBLISH"]
 

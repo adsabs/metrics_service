@@ -1,3 +1,7 @@
+### 1.0.6
+
+* cleanup of and comments in config module
+
 ### 1.0.5
 
 * fixed POST output for single bibcode (metrics_service Github issue 81)

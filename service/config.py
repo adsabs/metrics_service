@@ -1,10 +1,15 @@
-METRICS_SECRET_KEY = 'this should be changed'
+# Specify token needed to query the API
+METRICS_API_TOKEN = None
+# Specify the maximum number of bibcodes allowed to get metrics for
 METRICS_MAX_SUBMITTED = 1000
-METRICS_CHUNK_SIZE = 1000
-METRICS_MAX_HITS = 100000
+# Specify endpoint for Solr queries
 METRICS_SOLRQUERY_URL = 'https://api.adsabs.harvard.edu/v1/search/query'
+# Specify where the metrics database lives
 SQLALCHEMY_BINDS = {
     'metrics': 'postgresql+psycopg2://user:pwd@localhost:5432/metrics'}
+# We don't use thise SQLAlchemy functionality
+# see: http://stackoverflow.com/questions/33738467/sqlalchemy-who-needs-sqlalchemy-track-modifications
+SQLALCHEMY_TRACK_MODIFICATIONS = False
 # Config for logging
 METRICS_LOGGING = {
     'version': 1,
