@@ -5,7 +5,7 @@ from metrics import generate_metrics
 import time
 
 allowed_types = [
-    'basic', 'citations', 'histograms', 'indicators', 'timeseries']
+    'basic', 'citations', 'histograms', 'indicators', 'timeseries', 'simple']
 allowed_histograms = ['publications', 'reads', 'downloads', 'citations']
 
 
@@ -30,6 +30,13 @@ class Metrics(Resource):
         except:
             types = []
         types = types or allowed_types
+        # If "simple" metrics are requested, more records are allowed
+        if len(types) == 1 and types[0] == 'simple':
+            max_records = current_app.config.get('METRICS_MAX_SIMPLE')
+            types = ['basic', 'citations', 'indicators']
+            include_tori = False
+        else:
+            max_records = current_app.config.get('METRICS_MAX_SUBMITTED')
         # Same with histogram type
         try:
             histograms = request.json['histograms']
@@ -43,8 +50,8 @@ class Metrics(Resource):
                         'Error Info': 'Cannot send both bibcodes and query'}, 403
             bibcodes = map(str, request.json['bibcodes'])
             current_app.logger.info('Metrics requested for %s bibcodes'%len(bibcodes))
-            if len(bibcodes) > current_app.config.get('METRICS_MAX_SUBMITTED'):
-                current_app.logger.warning('Metrics requested for %s bibcodes. Maximum is: %s!'%(len(bibcodes),current_app.config.get('METRICS_MAX_SUBMITTED')))
+            if len(bibcodes) > max_records:
+                current_app.logger.warning('Metrics requested for %s bibcodes. Maximum is: %s!'%(len(bibcodes), max_records))
                 return {'Error': 'Unable to get results!',
                         'Error Info': 'No results: number of submitted \
                          bibcodes exceeds maximum number'}, 403

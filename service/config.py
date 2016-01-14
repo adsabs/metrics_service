@@ -2,6 +2,8 @@
 METRICS_API_TOKEN = None
 # Specify the maximum number of bibcodes allowed to get metrics for
 METRICS_MAX_SUBMITTED = 1000
+# Specify the maximum number of bibcodes allowed for simple metrics
+METRICS_MAX_SIMPLE = 1000
 # Specify endpoint for Solr queries
 METRICS_SOLRQUERY_URL = 'https://api.adsabs.harvard.edu/v1/search/query'
 # Specify where the metrics database lives
