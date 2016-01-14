@@ -1,3 +1,7 @@
+### 1.0.7
+
+* allow larger input sets for simple metrics
+
 ### 1.0.6
 
 * cleanup of and comments in config module
