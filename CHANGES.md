@@ -1,3 +1,7 @@
+### 1.0.8
+
+* update for "simple" metrics
+
 ### 1.0.7
 
 * allow larger input sets for simple metrics
