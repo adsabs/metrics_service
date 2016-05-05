@@ -157,6 +157,7 @@ def get_record_info(**args):
         # override some values of the solr query
         params['fl'] = 'bibcode'
         params['wt'] = 'json'
+        params['rows'] = 10000
         params['rows'] = max(min(int(params.get('rows', 10)), current_app.config['METRICS_MAX_SUBMITTED']), 1)
 
         headers = {'X-Forwarded-Authorization':

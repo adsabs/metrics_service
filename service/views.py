@@ -33,7 +33,7 @@ class Metrics(Resource):
         # If "simple" metrics are requested, more records are allowed
         if len(types) == 1 and types[0] == 'simple':
             max_records = current_app.config.get('METRICS_MAX_SIMPLE')
-            types = ['basic', 'citations', 'indicators']
+            types = ['basic', 'citations', 'indicators', 'histograms']
             include_tori = False
         else:
             max_records = current_app.config.get('METRICS_MAX_SUBMITTED')
