@@ -1,7 +1,7 @@
 # Specify token needed to query the API
 METRICS_API_TOKEN = None
 # Specify the maximum number of bibcodes allowed to get metrics for
-METRICS_MAX_SUBMITTED = 1000
+METRICS_MAX_SUBMITTED = 3000
 # Specify the maximum number of bibcodes allowed for simple metrics
 METRICS_MAX_SIMPLE = 1000
 # Specify endpoint for Solr queries
