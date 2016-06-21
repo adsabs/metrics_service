@@ -626,7 +626,8 @@ def get_tori(identifiers, bibcodes, self_cits=None):
     except:
         return 0, 0, 0, 0, tori_data
     # The riq index follows from the Tori index and the year range
-    yrange = datetime.now().year - min([int(b[:4]) for b in bibcodes]) + 1
+    #yrange = datetime.now().year - min([int(b[:4]) for b in bibcodes]) + 1
+    yrange = max([int(b[:4]) for b in bibcodes]) - min([int(b[:4]) for b in bibcodes]) + 1
     #yrange_ref = datetime.now().year - \
     #    min([int(p.bibcode[:4]) for p in data]) + 1
     # In the annoying case where all pubs are from next year, the above should be just 1
