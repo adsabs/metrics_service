@@ -1,3 +1,7 @@
+### 1.0.9
+
+* bug fix (Github issue 91, wrong time normalization riq)
+
 ### 1.0.8
 
 * update for "simple" metrics

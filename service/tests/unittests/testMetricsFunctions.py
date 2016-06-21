@@ -433,7 +433,7 @@ class TestToriFunction(TestCase):
         # First test the total Tori with the computed value
         self.assertAlmostEqual(tori, expected_results['indicators']['tori'])
         # The riq follows from normalizing by date range
-        yrange = datetime.now().year - min([int(p[:4]) for p in testset]) + 1
+        yrange = max([int(p[:4]) for p in testset]) - min([int(p[:4]) for p in testset]) + 1
         self.assertAlmostEqual(riq, int(1000.0 * sqrt(tori) / float(yrange)))
         # Now do the same for the refereed set
         self.assertAlmostEqual(
