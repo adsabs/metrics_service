@@ -1,3 +1,7 @@
+### 1.0.10
+
+* update of logfile name, making use of ENVIRONMENT variable
+
 ### 1.0.9
 
 * bug fix (Github issue 91, wrong time normalization riq)

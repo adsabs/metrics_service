@@ -1,3 +1,4 @@
+import os
 # Specify token needed to query the API
 METRICS_API_TOKEN = None
 # Specify the maximum number of bibcodes allowed to get metrics for
@@ -12,6 +13,8 @@ SQLALCHEMY_BINDS = {
 # We don't use thise SQLAlchemy functionality
 # see: http://stackoverflow.com/questions/33738467/sqlalchemy-who-needs-sqlalchemy-track-modifications
 SQLALCHEMY_TRACK_MODIFICATIONS = False
+# In what environment are we?
+ENVIRONMENT = os.getenv('ENVIRONMENT', 'staging').lower()
 # Config for logging
 METRICS_LOGGING = {
     'version': 1,
@@ -28,7 +31,7 @@ METRICS_LOGGING = {
             'formatter': 'default',
             'level': 'INFO',
             'class': 'logging.handlers.TimedRotatingFileHandler',
-            'filename': '/tmp/metrics_app.log',
+            'filename': '/tmp/metrics_service.app.{}.log'.format(ENVIRONMENT),
         },
         'console': {
             'formatter': 'default',
