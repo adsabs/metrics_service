@@ -1,3 +1,7 @@
+### 1.0.11
+
+* now log a warning when skipped bibcodes are found
+
 ### 1.0.10
 
 * update of logfile name, making use of ENVIRONMENT variable
