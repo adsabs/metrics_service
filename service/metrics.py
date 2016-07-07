@@ -77,7 +77,7 @@ def generate_metrics(**args):
     result['skipped bibcodes'] = skipped
     # If there are skipped records, create a log message
     if len(skipped) > 0:
-        current_app.logger.warning('Found %s skipped bibcodes in metrics request: %s'%(len(skipped),",".join(skipped))
+        current_app.logger.warning('Found %s skipped bibcodes in metrics request: %s'%(len(skipped),",".join(skipped)))
     # Start calculating the required statistics and indicators
     citdata = usage_data = citlists = selfcits = None
     if 'basic' in metrics_types:
