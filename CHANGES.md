@@ -1,3 +1,7 @@
+### 1.0.13
+
+* removed Consul dependencies
+
 ### 1.0.12
 
 * update of database connection handling (Github issue 96)
