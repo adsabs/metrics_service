@@ -1,3 +1,7 @@
+### 1.0.12
+
+* update of database connection handling (Github issue 96)
+
 ### 1.0.11
 
 * now log a warning when skipped bibcodes are found

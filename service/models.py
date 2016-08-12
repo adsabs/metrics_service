@@ -20,8 +20,11 @@ class Bind(object):
         self.bind = db.get_engine(current_app, bind_key)
 
     def execute(self, query, params=None):
-        return db.session.execute(query, params, bind=self.bind)
-
+        results = db.session.execute(query, params, bind=self.bind)
+        # Commit the transaction to the database
+        db.session.commit()
+        # Return the ResultProxy object
+        return results
 
 class MetricsModel(db.Model):
     __tablename__ = 'metrics'
@@ -51,7 +54,10 @@ def get_identifiers(bibcodes):
     SQL = rawSQL % bibstr
     db.metrics = Bind('metrics')
     results = db.metrics.execute(SQL)
-    return [(r.bibcode, r.id, r.refereed) for r in results]
+    res = [(r.bibcode, r.id, r.refereed) for r in results]
+    # Close the connection
+    results.close()
+    return res
 
 
 def get_basic_stats_data(IDs):
@@ -62,6 +68,8 @@ def get_basic_stats_data(IDs):
     db.metrics = Bind('metrics')
     results = db.metrics.execute(SQL)
     res = [r for r in results]
+    # Close the connection
+    results.close()
     return res
 
 
@@ -73,6 +81,8 @@ def get_publication_data(IDs):
     db.metrics = Bind('metrics')
     results = db.metrics.execute(SQL)
     res = [r for r in results]
+    # Close the connection
+    results.close()
     return res
 
 
@@ -85,6 +95,8 @@ def get_citation_data(IDs):
     db.metrics = Bind('metrics')
     results = db.metrics.execute(SQL)
     res = [r for r in results]
+    # Close the connection
+    results.close()
     return res
 
 
@@ -100,6 +112,8 @@ def get_citations(IDs, no_zero=True):
     db.metrics = Bind('metrics')
     results = db.metrics.execute(SQL)
     res = [r for r in results]
+    # Close the connection
+    results.close()
     return res
 
 
@@ -112,6 +126,8 @@ def get_indicator_data(IDs):
     db.metrics = Bind('metrics')
     results = db.metrics.execute(SQL)
     res = [r for r in results]
+    # Close the connection
+    results.close()
     return res
 
 
@@ -124,6 +140,8 @@ def get_usage_data(IDs):
     db.metrics = Bind('metrics')
     results = db.metrics.execute(SQL)
     res = [r for r in results]
+    # Close the connection
+    results.close()
     return res
 
 
@@ -136,4 +154,6 @@ def get_tori_data(IDs):
     db.metrics = Bind('metrics')
     results = db.metrics.execute(SQL)
     res = [r for r in results]
+    # Close the connection
+    results.close()
     return res
