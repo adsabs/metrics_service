@@ -8,6 +8,8 @@ from flask.ext.sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import text
 from sqlalchemy import Column, Integer, String, DateTime, Boolean
 from sqlalchemy.dialects import postgresql
+from sqlalchemy.engine.result import ResultProxy
+import sys
 
 db = SQLAlchemy()
 
@@ -21,10 +23,15 @@ class Bind(object):
 
     def execute(self, query, params=None):
         results = db.session.execute(query, params, bind=self.bind)
+        # Create a list of results
+        res = [r for r in results]
         # Commit the transaction to the database
         db.session.commit()
+        # and close the connection
+        if isinstance(results, ResultProxy):
+            results.close()
         # Return the ResultProxy object
-        return results
+        return res
 
 class MetricsModel(db.Model):
     __tablename__ = 'metrics'
@@ -54,11 +61,12 @@ def get_identifiers(bibcodes):
     SQL = rawSQL % bibstr
     db.metrics = Bind('metrics')
     results = db.metrics.execute(SQL)
-    res = [(r.bibcode, r.id, r.refereed) for r in results]
-    # Close the connection
-    results.close()
+    # For compatibility with unittests
+    try:
+        res = [(r[1], r[0], r[2]) for r in results]
+    except:
+        res = [(r.bibcode, r.id, r.refereed) for r in results]
     return res
-
 
 def get_basic_stats_data(IDs):
     IDstr = ",".join(map(lambda a: "(%s)" % a, IDs))
@@ -66,10 +74,7 @@ def get_basic_stats_data(IDs):
               metrics WHERE id = ANY (VALUES %s)"
     SQL = rawSQL % IDstr
     db.metrics = Bind('metrics')
-    results = db.metrics.execute(SQL)
-    res = [r for r in results]
-    # Close the connection
-    results.close()
+    res = db.metrics.execute(SQL)
     return res
 
 
@@ -79,10 +84,7 @@ def get_publication_data(IDs):
               WHERE id = ANY (VALUES %s)"
     SQL = rawSQL % IDstr
     db.metrics = Bind('metrics')
-    results = db.metrics.execute(SQL)
-    res = [r for r in results]
-    # Close the connection
-    results.close()
+    res = db.metrics.execute(SQL)
     return res
 
 
@@ -93,10 +95,7 @@ def get_citation_data(IDs):
               citation_num <> 0 ORDER BY citation_num DESC"
     SQL = rawSQL % IDstr
     db.metrics = Bind('metrics')
-    results = db.metrics.execute(SQL)
-    res = [r for r in results]
-    # Close the connection
-    results.close()
+    res = db.metrics.execute(SQL)
     return res
 
 
@@ -110,10 +109,7 @@ def get_citations(IDs, no_zero=True):
               FROM metrics WHERE id = ANY (VALUES %s)"
     SQL = rawSQL % IDstr
     db.metrics = Bind('metrics')
-    results = db.metrics.execute(SQL)
-    res = [r for r in results]
-    # Close the connection
-    results.close()
+    res = db.metrics.execute(SQL)
     return res
 
 
@@ -124,10 +120,7 @@ def get_indicator_data(IDs):
               ORDER BY citation_num DESC"
     SQL = rawSQL % IDstr
     db.metrics = Bind('metrics')
-    results = db.metrics.execute(SQL)
-    res = [r for r in results]
-    # Close the connection
-    results.close()
+    res = db.metrics.execute(SQL)
     return res
 
 
@@ -138,10 +131,7 @@ def get_usage_data(IDs):
               AND array_length(reads, 1) > 0"
     SQL = rawSQL % IDstr
     db.metrics = Bind('metrics')
-    results = db.metrics.execute(SQL)
-    res = [r for r in results]
-    # Close the connection
-    results.close()
+    res = db.metrics.execute(SQL)
     return res
 
 
@@ -152,8 +142,5 @@ def get_tori_data(IDs):
               AND citation_num <> 0"
     SQL = rawSQL % IDstr
     db.metrics = Bind('metrics')
-    results = db.metrics.execute(SQL)
-    res = [r for r in results]
-    # Close the connection
-    results.close()
+    res = db.metrics.execute(SQL)
     return res
