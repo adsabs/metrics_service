@@ -1,3 +1,7 @@
+### 1.0.14
+
+* add profiling command to manage.py
+
 ### 1.0.13
 
 * removed Consul dependencies

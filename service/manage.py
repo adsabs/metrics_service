@@ -16,5 +16,13 @@ manager = Manager(app_)
 
 manager.add_command('db', MigrateCommand)
 
+@manager.command
+def profile(length=25, profile_dir=None):
+    """Start the application under the code profiler."""
+    from werkzeug.contrib.profiler import ProfilerMiddleware
+    app_.wsgi_app = ProfilerMiddleware(app_.wsgi_app, restrictions=[length],
+                                      profile_dir=profile_dir)
+    app_.run()
+
 if __name__ == '__main__':
     manager.run()
