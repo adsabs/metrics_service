@@ -1,3 +1,7 @@
+### 1.0.15
+
+* bug fix in time series
+
 ### 1.0.14
 
 * add profiling command to manage.py
