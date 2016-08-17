@@ -657,7 +657,7 @@ def get_time_series(identifiers, bibcodes, data=None, usagedata=None,
         usagedata = get_usage_data(identifiers)
     if not self_cits and include_tori:
         self_cits = get_selfcitations(identifiers, bibcodes)[1]
-    self_citations = set((itertools.chain(*[x[0] for x in self_cits])))
+        self_citations = set((itertools.chain(*[x[0] for x in self_cits])))
     if not tori_data and include_tori:
         tdata = get_tori_data(identifiers)
         tori_data = [p for p in list(itertools.chain(
