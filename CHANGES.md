@@ -1,3 +1,7 @@
+### 1.0.16
+
+* SQLALCHEMY_COMMIT_ON_TEARDOWN = True (in config)
+
 ### 1.0.15
 
 * bug fix in time series

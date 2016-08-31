@@ -13,6 +13,8 @@ SQLALCHEMY_BINDS = {
 # We don't use thise SQLAlchemy functionality
 # see: http://stackoverflow.com/questions/33738467/sqlalchemy-who-needs-sqlalchemy-track-modifications
 SQLALCHEMY_TRACK_MODIFICATIONS = False
+# Proper handling of database connections
+SQLALCHEMY_COMMIT_ON_TEARDOWN = True
 # In what environment are we?
 ENVIRONMENT = os.getenv('ENVIRONMENT', 'staging').lower()
 # Config for logging
