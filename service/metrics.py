@@ -12,6 +12,7 @@ import itertools
 import simplejson as json
 import numpy as np
 import cytoolz as cy
+import timeout_decorator
 from math import sqrt
 from collections import defaultdict
 from operator import itemgetter
@@ -109,12 +110,24 @@ def generate_metrics(**args):
         indic, indic_ref = get_indicators(
             identifiers, data=citdata, usagedata=usage_data)
         if tori:
-            tori, tori_ref, riq, riq_ref, tdata = get_tori(
-                identifiers, bibcodes, self_cits=selfcits)
-            indic['tori'] = tori
-            indic['riq'] = riq
-            indic_ref['tori'] = tori_ref
-            indic_ref['riq'] = riq_ref
+            try:
+                tori, tori_ref, riq, riq_ref, tdata = get_tori(
+                    identifiers, bibcodes, self_cits=selfcits)
+                indic['tori'] = tori
+                indic['riq'] = riq
+                indic_ref['tori'] = tori_ref
+                indic_ref['riq'] = riq_ref
+            except timeout_decorator.timeout_decorator.TimeoutError:
+                current_app.logger.warning('Calculation for tori and riq timed out. Skipping...')
+                indic['tori'] = 'NA'
+                indic['riq'] = 'NA'
+                indic_ref['tori'] = 'NA'
+                indic_ref['riq'] = 'NA'
+        else:
+            indic['tori'] = 'NA'
+            indic['riq'] = 'NA'
+            indic_ref['tori'] = 'NA'
+            indic_ref['riq'] = 'NA'
         result['indicators'] = indic
         result['indicators refereed'] = indic_ref
     if 'timeseries' in metrics_types or 'time series' in metrics_types:
@@ -604,7 +617,7 @@ def get_indicators(identifiers, data=None, usagedata=None):
     # Send results back
     return ind, ind_ref
 
-
+@timeout_decorator.timeout(5)
 def get_tori(identifiers, bibcodes, self_cits=None):
     # Get additional data necessary for Tori calculation
     data = get_tori_data(identifiers)
@@ -640,7 +653,7 @@ def get_tori(identifiers, bibcodes, self_cits=None):
     # Send the results back
     return tori, tori_ref, riq, riq_ref, tori_data
 
-
+@timeout_decorator.timeout(10)
 def get_time_series(identifiers, bibcodes, data=None, usagedata=None,
                     tori_data=None, include_tori=True, self_cits=None):
     series = {}

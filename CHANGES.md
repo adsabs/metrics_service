@@ -1,3 +1,7 @@
+### 1.0.17
+
+* force timeout on tori
+
 ### 1.0.16
 
 * SQLALCHEMY_COMMIT_ON_TEARDOWN = True (in config)
