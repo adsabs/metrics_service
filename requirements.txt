@@ -16,4 +16,3 @@ mock
 coveralls
 cytoolz
 nose
-timeout-decorator

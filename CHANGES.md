@@ -1,3 +1,7 @@
+### 1.0.18
+
+* timeout decorator is not threadsafe 
+
 ### 1.0.17
 
 * force timeout on tori
