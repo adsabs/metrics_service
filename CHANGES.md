@@ -1,3 +1,7 @@
+### 1.0.19
+
+* include list of self-citations in output
+
 ### 1.0.18
 
 * timeout decorator is not threadsafe 
