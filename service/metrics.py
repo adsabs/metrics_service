@@ -329,6 +329,8 @@ def get_citation_stats(identifiers, bibcodes, bibcodes_ref):
     cs['number of citing papers'] = Nciting
     csr['number of citing papers'] = Nciting_ref
     cs['number of self-citations'] = Nself
+    self_citations = list(itertools.chain(*[list(e[0]) for e in selfcits if len(e[0]) > 0]))
+    cs['self-citations'] = self_citations
     csr['number of self-citations'] = Nself_ref
     # The citation stats
     # Total number of citations
