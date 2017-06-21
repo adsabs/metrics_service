@@ -1,3 +1,7 @@
+### 1.0.20
+
+* requirements.txt update and some cleanup
+
 ### 1.0.19
 
 * include list of self-citations in output
