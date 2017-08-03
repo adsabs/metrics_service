@@ -37,7 +37,7 @@ class MetricsModel(db.Model):
     __tablename__ = 'metrics'
     __bind_key__ = 'metrics'
     id = Column(Integer, primary_key=True)
-    bibcode = Column(String, nullable=False, index=True)
+    bibcode = Column(String, nullable=False, index=True, unique=True)
     
     an_citations = Column(postgresql.REAL)
     an_refereed_citations = Column(postgresql.REAL)
