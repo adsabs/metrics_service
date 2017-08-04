@@ -37,22 +37,23 @@ class MetricsModel(db.Model):
     __tablename__ = 'metrics'
     __bind_key__ = 'metrics'
     id = Column(Integer, primary_key=True)
-    bibcode = Column(String, nullable=False, index=True)
-    refereed = Column(Boolean)
-    rn_citations = Column(postgresql.REAL)
-    rn_citation_data = Column(postgresql.JSON)
+    bibcode = Column(String, nullable=False, index=True, unique=True)
+    
+    an_citations = Column(postgresql.REAL)
+    an_refereed_citations = Column(postgresql.REAL)
+    author_num = Column(Integer)
+    citations = Column(postgresql.ARRAY(String))
+    citation_num = Column(Integer)
     downloads = Column(postgresql.ARRAY(Integer))
     reads = Column(postgresql.ARRAY(Integer))
-    an_citations = Column(postgresql.REAL)
-    refereed_citation_num = Column(Integer)
-    citation_num = Column(Integer)
-    reference_num = Column(Integer)
-    citations = Column(postgresql.ARRAY(String))
+    refereed = Column(Boolean)
     refereed_citations = Column(postgresql.ARRAY(String))
-    author_num = Column(Integer)
-    an_refereed_citations = Column(postgresql.REAL)
+    refereed_citation_num = Column(Integer)
+    reference_num = Column(Integer)
+    rn_citations = Column(postgresql.REAL)
+    rn_citation_data = Column(postgresql.JSON)
     modtime = Column(DateTime)
-
+    
 
 def get_identifiers(bibcodes):
     bibstr = ",".join(map(lambda a: "\'%s\'" % a, bibcodes))
