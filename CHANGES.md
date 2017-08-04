@@ -1,3 +1,7 @@
+### 1.0.21
+
+* Alembic update and db model unittest fix
+
 ### 1.0.20
 
 * requirements.txt update and some cleanup

@@ -89,15 +89,22 @@ class TestMetricsModel(TestCase):
 
     def test_metrics_model(self):
         '''Test the guts of the metrics model'''
-        mc = [Column(Integer), Column(String), Column(Boolean),
-              Column(postgresql.REAL), Column(postgresql.JSON),
-              Column(postgresql.ARRAY(Integer)),
-              Column(postgresql.ARRAY(Integer)),
-              Column(postgresql.REAL),
-              Column(Integer), Column(Integer), Column(Integer),
-              Column(postgresql.ARRAY(String)),
-              Column(postgresql.ARRAY(String)),
-              Column(Integer), Column(postgresql.REAL), Column(DateTime)]
+        mc = [Column(Integer), # id
+              Column(String),  # bibcode
+              Column(postgresql.REAL), # an_citations
+              Column(postgresql.REAL), # an_refereed_citations
+              Column(Integer), # author_num
+              Column(postgresql.ARRAY(String)), # citations
+              Column(Integer), # citation_num
+              Column(postgresql.ARRAY(Integer)), # downloads
+              Column(postgresql.ARRAY(Integer)), # reads
+              Column(Boolean), # refereed
+              Column(postgresql.ARRAY(String)), # refereed_citations
+              Column(Integer), # refereed_citation_num
+              Column(Integer), # reference_num
+              Column(postgresql.REAL), # rn_citations
+              Column(postgresql.JSON), # rn_citation_data
+              Column(DateTime)] # modtime
 
         expected = map(type, [x.type for x in mc])
         self.assertEqual([type(c.type)
