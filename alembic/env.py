@@ -62,7 +62,7 @@ def run_migrations_online():
     """
     cfg = config.get_section(config.config_ini_section)
     if 'use_flask_db_url' in cfg and cfg['use_flask_db_url'] == 'true':
-        cfg['sqlalchemy.url'] = get_app_config('SQLALCHEMY_URL')
+        cfg['sqlalchemy.url'] = get_app_config('SQLALCHEMY_BINDS')['metrics']
     
     
     engine = engine_from_config(

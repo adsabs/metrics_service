@@ -1,3 +1,7 @@
+### 1.0.22
+
+* alembic fix (env.py) and default values for some db columns
+
 ### 1.0.21
 
 * Alembic update and db model unittest fix
