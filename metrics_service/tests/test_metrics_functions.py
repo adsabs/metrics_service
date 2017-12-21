@@ -16,17 +16,17 @@ import itertools
 import unittest
 import requests
 import time
-import app
+from metrics_service import app
 import json
 import httpretty
 import mock
-from models import db, Bind, MetricsModel
+from metrics_service.models import MetricsModel
 
 testset = ['1997ZGlGl..33..173H', '1997BoLMe..85..475M',
            '1997BoLMe..85...81M', '2014bbmb.book..243K', '2012opsa.book..253H']
 
 # Import the JSON document with expected results
-results_file = "%s/tests/unittests/testdata/expected_results" % PROJECT_HOME
+results_file = "%s/metrics_service/tests/testdata/expected_results" % PROJECT_HOME
 with open(results_file) as data_file:
     expected_results = json.load(data_file)
 
@@ -53,7 +53,7 @@ def get_test_data(bibcodes=None):
     # has the correct length, given the current year (however, the reads
     # /downloads in the stub data never change
     Nentries = year - 1996 + 1
-    datafiles = glob.glob("%s/tests/unittests/testdata/*.json" % PROJECT_HOME)
+    datafiles = glob.glob("%s/metrics_service/tests/testdata/*.json" % PROJECT_HOME)
     records = []
     for dfile in datafiles:
         with open(dfile) as data_file:
@@ -89,21 +89,21 @@ class TestHelperFunctions(TestCase):
 
     def test_chunks(self):
         '''Test the function that split a list up in a list of lists'''
-        from metrics import chunks
+        from metrics_service.metrics import chunks
         list = ['a', 'b', 'c', 'd']
         expected = [['a'], ['b'], ['c'], ['d']]
         self.assertEqual([x for x in chunks(list, 1)], expected)
 
     def test_norm_histo(self):
         '''Test the function that converts a list of tuples to a histogram'''
-        from metrics import get_norm_histo
+        from metrics_service.metrics import get_norm_histo
         l = [(2000, 1.5), (2000, 1.5), (2001, 1.7)]
         expected = {2000: 3.0, 2001: 1.7}
         self.assertEqual(get_norm_histo(l), expected)
 
     def test_merge_dictionaries(self):
         '''Test the function that merges two dictionaries'''
-        from metrics import merge_dictionaries
+        from metrics_service.metrics import merge_dictionaries
         d1 = {1991: 1, 1993: 3}
         d2 = {1990: 0, 1992: 2}
         expected = {1990: 0, 1991: 1, 1992: 2, 1993: 3}
@@ -114,20 +114,17 @@ class TestRecordInfoFunction(TestCase):
 
     '''Check if the helper functions return expected results'''
 
+    testdata = get_test_data(bibcodes=testset)
+
     def create_app(self):
         '''Create the wsgi application'''
         app_ = app.create_app()
-        db.session = mock.Mock()
-        db.metrics = mock.Mock()
-        exe = db.session.execute
-        mtr = db.metrics.execute
-        exe.return_value = get_test_data(bibcodes=testset)
-        mtr.return_value = get_test_data(bibcodes=testset)
         return app_
 
-    def test_get_record_info_from_bibcodes(self):
+    @mock.patch('metrics_service.models.execute_SQL_query', return_value=testdata)
+    def test_get_record_info_from_bibcodes(self, mock_execute_SQL_query):
         '''Test getting record info when specifying bibcodes'''
-        from metrics import get_record_info
+        from metrics_service.metrics import get_record_info
         bibs, bibs_ref, IDs, missing = get_record_info(
             bibcodes=testset, query=None)
         # The list of bibcodes returned should be equal to the test set
@@ -143,74 +140,21 @@ class TestRecordInfoFunction(TestCase):
             bibcodes=testset + ['foo'], query=None)
         self.assertEqual(missing, ['foo'])
 
-    @httpretty.activate
-    def test_get_record_info_from_query(self):
-        '''Test getting record info when a query is supplied'''
-        from metrics import get_record_info
-        httpretty.register_uri(
-            httpretty.GET, self.app.config.get('METRICS_SOLRQUERY_URL'),
-            content_type='application/json',
-            status=200,
-            body="""{
-            "responseHeader":{
-            "status":0, "QTime":0,
-            "params":{ "fl":"bibcode", "indent":"true", "wt":"json", "q":"*"}},
-            "response":{"numFound":10456930,"start":0,"docs":%s
-            }}""" % json.dumps(mockdata))
-        bibs, bibs_ref, IDs, missing = get_record_info(
-            bibcodes=None, query="foo")
-        # The list IDs should be a list of integers
-        self.assertEqual(isinstance(IDs, list), True)
-        self.assertTrue(False not in [isinstance(x, int) for x in IDs])
-        # The list of skipped bibcodes should be empty
-        self.assertEqual(missing, [])
-        
-        # test we can send query with filters
-        max_row = self.app.config.get('METRICS_MAX_SUBMITTED')
-        def request_callback(request, uri, headers):
-            if request.querystring['q'] != ['foo'] or \
-                request.querystring['fq'] != ['title:boo'] or \
-                request.querystring['rows'] != [str(max_row)] or \
-                request.querystring['fl'] != ['bibcode']:
-                return (500, headers, "{'The query parameters were not passed properly'}")
-            return (200, headers, """{
-            "responseHeader":{
-            "status":0, "QTime":0,
-            "params":%s},
-            "response":{"numFound":10456930,"start":0,"docs":%s
-            }}""" % (json.dumps(request.querystring), json.dumps(mockdata))
-            )
-
-        httpretty.register_uri(
-            httpretty.GET, self.app.config.get('METRICS_SOLRQUERY_URL'),
-            body=request_callback)
-        get_record_info(
-            bibcodes=None, query={'q': 'foo', 'fq': 'title:boo', 'rows': '5000', 
-                                  'fl': 'title,foo,bar'})
-        
-        res = get_record_info(
-            bibcodes=None, query=[{'q': 'foo', 'fq': 'title:boo', 'rows': '5000', 
-                                  'fl': 'title,foo,bar'}])
-        self.assertEqual(res['Status Code'], 403)
-        
 class TestSelfCitationFunction(TestCase):
 
     '''Check if the expected self-citations are returned'''
 
+    testdata = get_test_data()
+
     def create_app(self):
         '''Create the wsgi application'''
         app_ = app.create_app()
-        db.session = mock.Mock()
-        db.metrics = mock.Mock()
-        exe = db.session.execute
-        mtr = db.metrics.execute
-        exe.return_value = get_test_data()
-        mtr.return_value = get_test_data()
         return app_
 
-    def test_get_selfcitations(self):
+    @mock.patch('metrics_service.models.execute_SQL_query', return_value=testdata)
+    def test_get_selfcitations(self, mock_execute_SQL_query):
         '''Test getting self-citations'''
-        from metrics import get_selfcitations
+        from metrics_service.metrics import get_selfcitations
         data, selfcits, Ns, Ns_r, Nc, Nc_r = get_selfcitations(
             [1, 2, 3], testset)
         # The 'data' returned is upposed to be a list of MetricsModel objects
@@ -252,20 +196,17 @@ class TestBasicStatsFunction(TestCase):
 
     '''Check if the expected basic stats are returned'''
 
+    testdata = get_test_data(bibcodes=testset)
+
     def create_app(self):
         '''Create the wsgi application'''
         app_ = app.create_app()
-        db.session = mock.Mock()
-        db.metrics = mock.Mock()
-        exe = db.session.execute
-        mtr = db.metrics.execute
-        exe.return_value = get_test_data(bibcodes=testset)
-        mtr.return_value = get_test_data(bibcodes=testset)
         return app_
 
-    def test_get_basic_stats(self):
+    @mock.patch('metrics_service.models.execute_SQL_query', return_value=testdata)
+    def test_get_basic_stats(self, mock_execute_SQL_query):
         '''Test getting basic stats'''
-        from metrics import get_basic_stats
+        from metrics_service.metrics import get_basic_stats
         # We use mock data, so not important that we feed bibcodes instead of
         # IDs
         bs, bsr, data = get_basic_stats(testset)
@@ -320,21 +261,18 @@ class TestCitationStatsFunction(TestCase):
 
     '''Check if the expected citation stats are returned'''
 
+    testdata = get_test_data(bibcodes=testset)
+
     def create_app(self):
         '''Create the wsgi application'''
         app_ = app.create_app()
-        db.session = mock.Mock()
-        db.metrics = mock.Mock()
-        exe = db.session.execute
-        mtr = db.metrics.execute
-        exe.return_value = get_test_data(bibcodes=testset)
-        mtr.return_value = get_test_data(bibcodes=testset)
         return app_
 
-    def test_get_citation_stats(self):
+    @mock.patch('metrics_service.models.execute_SQL_query', return_value=testdata)
+    def test_get_citation_stats(self, mock_execute_SQL_query):
         '''Test getting citation stats'''
-        from metrics import get_citation_stats
-        from metrics import get_record_info
+        from metrics_service.metrics import get_citation_stats
+        from metrics_service.metrics import get_record_info
         bibs, bibs_ref, IDs, missing = get_record_info(
             bibcodes=testset, query=None)
         # We use mock data, so not important that we feed bibcodes instead of
@@ -363,20 +301,17 @@ class TestIndicatorsFunction(TestCase):
 
     '''Check if the expected indicator values are returned'''
 
+    testdata = get_test_data(bibcodes=testset)
+
     def create_app(self):
         '''Create the wsgi application'''
         app_ = app.create_app()
-        db.session = mock.Mock()
-        db.metrics = mock.Mock()
-        exe = db.session.execute
-        mtr = db.metrics.execute
-        exe.return_value = get_test_data(bibcodes=testset)
-        mtr.return_value = get_test_data(bibcodes=testset)
         return app_
 
-    def test_get_indicators(self):
+    @mock.patch('metrics_service.models.execute_SQL_query', return_value=testdata)
+    def test_get_indicators(self, mock_execute_SQL_query):
         '''Test getting indicators'''
-        from metrics import get_indicators
+        from metrics_service.metrics import get_indicators
         indic, indic_ref = get_indicators(testset)
         # Start comparing the results with computed values
         # Get the year range for comparison of 'm'
@@ -415,20 +350,17 @@ class TestToriFunction(TestCase):
 
     '''Check if the expected Tori and riq values are returned'''
 
+    testdata = get_test_data()
+
     def create_app(self):
         '''Create the wsgi application'''
         app_ = app.create_app()
-        db.session = mock.Mock()
-        db.metrics = mock.Mock()
-        exe = db.session.execute
-        mtr = db.metrics.execute
-        exe.return_value = get_test_data()
-        mtr.return_value = get_test_data()
         return app_
 
-    def test_get_tori(self):
+    @mock.patch('metrics_service.models.execute_SQL_query', return_value=testdata)
+    def test_get_tori(self, mock_execute_SQL_query):
         '''Test getting Tori and riq'''
-        from metrics import get_tori
+        from metrics_service.metrics import get_tori
         tori, tori_ref, riq, riq_ref, d = get_tori(testset, testset)
         # First test the total Tori with the computed value
         self.assertAlmostEqual(tori, expected_results['indicators']['tori'])
@@ -447,20 +379,17 @@ class TestPublicationHistogram(TestCase):
 
     '''Check if the expected publication histogram is returned'''
 
+    testdata = get_test_data(bibcodes=testset)
+
     def create_app(self):
         '''Create the wsgi application'''
         app_ = app.create_app()
-        db.session = mock.Mock()
-        db.metrics = mock.Mock()
-        exe = db.session.execute
-        mtr = db.metrics.execute
-        exe.return_value = get_test_data(bibcodes=testset)
-        mtr.return_value = get_test_data(bibcodes=testset)
         return app_
 
-    def test_publication_histograms(self):
+    @mock.patch('metrics_service.models.execute_SQL_query', return_value=testdata)
+    def test_publication_histograms(self, mock_execute_SQL_query):
         '''Test getting the publication histograms'''
-        from metrics import get_publication_histograms
+        from metrics_service.metrics import get_publication_histograms
 
         hist = get_publication_histograms(testset)
         # First the publication histogram for all publications
@@ -489,20 +418,17 @@ class TestUsageHistogram(TestCase):
 
     '''Check if the expected publication histogram is returned'''
 
+    testdata = get_test_data(bibcodes=testset)
+
     def create_app(self):
         '''Create the wsgi application'''
         app_ = app.create_app()
-        db.session = mock.Mock()
-        db.metrics = mock.Mock()
-        exe = db.session.execute
-        mtr = db.metrics.execute
-        exe.return_value = get_test_data(bibcodes=testset)
-        mtr.return_value = get_test_data(bibcodes=testset)
         return app_
 
-    def test_usage_histograms(self):
+    @mock.patch('metrics_service.models.execute_SQL_query', return_value=testdata)
+    def test_usage_histograms(self, mock_execute_SQL_query):
         '''Test getting the usage histograms'''
-        from metrics import get_usage_histograms
+        from metrics_service.metrics import get_usage_histograms
         # First get the 'reads' histograms
         hist = get_usage_histograms(testset)
         # Every entry in the histogram for all papers should, by design,
@@ -546,20 +472,17 @@ class TestCitationHistogram(TestCase):
 
     '''Check if the expected citation histogram is returned'''
 
+    testdata = get_test_data(bibcodes=testset)
+
     def create_app(self):
         '''Create the wsgi application'''
         app_ = app.create_app()
-        db.session = mock.Mock()
-        db.metrics = mock.Mock()
-        exe = db.session.execute
-        mtr = db.metrics.execute
-        exe.return_value = get_test_data(bibcodes=testset)
-        mtr.return_value = get_test_data(bibcodes=testset)
         return app_
 
-    def test_citation_histograms(self):
+    @mock.patch('metrics_service.models.execute_SQL_query', return_value=testdata)
+    def test_citation_histograms(self, mock_execute_SQL_query):
         '''Test getting the citation histograms'''
-        from metrics import get_citation_histograms
+        from metrics_service.metrics import get_citation_histograms
 
         hist = get_citation_histograms(testset)
 
@@ -588,20 +511,17 @@ class TestTimeSeries(TestCase):
 
     '''Check if the expected time series are returned'''
 
+    testdata = get_test_data(bibcodes=testset)
+
     def create_app(self):
         '''Create the wsgi application'''
         app_ = app.create_app()
-        db.session = mock.Mock()
-        db.metrics = mock.Mock()
-        exe = db.session.execute
-        mtr = db.metrics.execute
-        exe.return_value = get_test_data(bibcodes=testset)
-        mtr.return_value = get_test_data(bibcodes=testset)
         return app_
 
-    def test_time_series(self):
+    @mock.patch('metrics_service.models.execute_SQL_query', return_value=testdata)
+    def test_time_series(self, mock_execute_SQL_query):
         '''Test getting the time series'''
-        from metrics import get_time_series
+        from metrics_service.metrics import get_time_series
 
         ts = get_time_series(testset, testset)
         # The time series get test over the range of publication years

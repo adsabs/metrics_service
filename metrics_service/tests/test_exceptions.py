@@ -15,17 +15,17 @@ import itertools
 import unittest
 import requests
 import time
-import app
 import json
 import httpretty
 import mock
-from models import db, Bind, MetricsModel
+from metrics_service.models import MetricsModel
+from metrics_service import app
 
 testset = ['1997ZGlGl..33..173H', '1997BoLMe..85..475M',
            '1997BoLMe..85...81M', '2014bbmb.book..243K', '2012opsa.book..253H']
 
 # Import the JSON document with expected results
-results_file = "%s/tests/unittests/testdata/expected_results" % PROJECT_HOME
+results_file = "%s/metrics_service/tests/testdata/expected_results" % PROJECT_HOME
 with open(results_file) as data_file:
     expected_results = json.load(data_file)
 
@@ -87,17 +87,14 @@ class TestUnknownMetricsType(TestCase):
     def create_app(self):
         '''Create the wsgi application'''
         app_ = app.create_app()
-        db.session = mock.Mock()
-        db.metrics = mock.Mock()
-        exe = db.session.execute
-        mtr = db.metrics.execute
+        session = mock.Mock()
+        exe = session.execute
         exe.return_value = get_test_data(bibcodes=testset)
-        mtr.return_value = get_test_data(bibcodes=testset)
         return app_
 
     def test_get_unknown_metrics_type(self):
         '''When no metrics types are specified an exception is thrown'''
-        from metrics import generate_metrics
+        from metrics_service.metrics import generate_metrics
 
         res = generate_metrics(bibcodes=testset, metrics_types=[])
         # An unknown metrics type should return an empty dictionary
@@ -111,17 +108,14 @@ class TestNoIdentiersFound(TestCase):
     def create_app(self):
         '''Create the wsgi application'''
         app_ = app.create_app()
-        db.session = mock.Mock()
-        db.metrics = mock.Mock()
-        exe = db.session.execute
-        mtr = db.metrics.execute
+        session = mock.Mock()
+        exe = session.execute
         exe.return_value = []
-        mtr.return_value = []
         return app_
 
     def test_no_identifiers_found(self):
         '''When no identifiers are found an exception is thrown'''
-        from metrics import generate_metrics
+        from metrics_service.metrics import generate_metrics
 
         res = generate_metrics(bibcodes=testset, metrics_types=[])
         # No identifiers (i.e. no records found in database) should return
@@ -136,41 +130,20 @@ class TestNoRecordInfoFound(TestCase):
     def create_app(self):
         '''Create the wsgi application'''
         app_ = app.create_app()
-        db.session = mock.Mock()
-        db.metrics = mock.Mock()
-        exe = db.session.execute
-        mtr = db.metrics.execute
+        session = mock.Mock()
+        exe = session.execute
         exe.return_value = []
-        mtr.return_value = []
         return app_
 
     def test_illegal_retrieval_method(self):
         '''No record info is found when an unsupported retrieval method
            is specified'''
-        from metrics import get_record_info
+        from metrics_service.metrics import get_record_info
         data = get_record_info(other="foo")
         expected = {'Status Code': 200,
                     'Error Info': 'Unsupported metrics request',
                     'Error': 'Unable to get results!'}
         self.assertEqual(data, expected)
-
-    @httpretty.activate
-    def test_solr_failure(self):
-        '''No record info is found because Solr failed to return results'''
-        from metrics import get_record_info
-        httpretty.register_uri(
-            httpretty.GET, self.app.config.get('METRICS_SOLRQUERY_URL'),
-            content_type='application/json',
-            status=500,
-            body="""{
-            "responseHeader":{
-            "status":0, "QTime":0,
-            "params":{ "fl":"bibcode", "indent":"true", "wt":"json", "q":"*"}},
-            "response":{"numFound":0,"start":0,"docs":[]
-            }}""")
-        data = get_record_info(bibcodes=None, query="foo")
-        self.assertTrue(data['Status Code'] == 500)
-        self.assertTrue('Error' in data)
 
 # EXTERNAL EXCEPTIONS
 #
@@ -231,15 +204,10 @@ class TestMetricsSingleInvalidBibcode(TestCase):
     def create_app(self):
         '''Create the wsgi application'''
         app_ = app.create_app()
-        db.session = mock.Mock()
-        db.metrics = mock.Mock()
-        exe = db.session.execute
-        mtr = db.metrics.execute
-        exe.return_value = []
-        mtr.return_value = []
         return app_
 
-    def test_get_metrics_single_invalid_bibcode(self):
+    @mock.patch('metrics_service.models.execute_SQL_query', return_value=[])
+    def test_get_metrics_single_invalid_bibcode(self, mock_execute_SQL_query):
         '''Test getting exception for a single bibcode'''
         url = url_for('pubmetrics', bibcode='foo')
         r = self.client.get(url)

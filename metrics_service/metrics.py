@@ -24,7 +24,6 @@ from models import get_publication_data
 from models import get_usage_data
 from models import get_indicator_data
 from models import get_tori_data
-from client import client
 
 # Helper methods
 
@@ -148,43 +147,6 @@ def get_record_info(**args):
         bibs = [x[0] for x in IDmap]
         bibs_ref = [x[0] for x in IDmap if x[2]]
         missing = [b for b in args['bibcodes'] if b not in bibs]
-        return bibs, bibs_ref, IDs, missing
-    # If we received a query, retrieve the associated bibcodes from Solr
-    elif args.get('query', None):
-        bibcodes = []
-        q = args.get('query')
-        
-        if isinstance(q, basestring):
-            params = {'q': q}
-        elif isinstance(q, dict):
-            params = dict(q) # clone it
-        else:
-            return {"Error": "Invalid value of the 'query' parameter: %s" % q,
-                    "Status Code": 403}
-
-        # override some values of the solr query
-        params['fl'] = 'bibcode'
-        params['wt'] = 'json'
-        params['rows'] = 10000
-        params['rows'] = max(min(int(params.get('rows', 10)), current_app.config['METRICS_MAX_SUBMITTED']), 1)
-
-        headers = {'X-Forwarded-Authorization':
-                   request.headers.get('Authorization')}
-        response = client().get(
-            current_app.config.get('METRICS_SOLRQUERY_URL'),
-            params=params, headers=headers)
-        if response.status_code != 200:
-            return {"Error": "Unable to get results!",
-                    "Error Info": response.text,
-                    "Status Code": response.status_code}
-        resp = response.json()
-        biblist = [d['bibcode']
-                   for d in resp['response']['docs'] if 'bibcode' in d]
-        IDmap = get_identifiers(biblist)
-        IDs = [x[1] for x in IDmap]
-        bibs = [x[0] for x in IDmap]
-        bibs_ref = [x[0] for x in IDmap if x[2]]
-        missing = [b for b in biblist if b not in bibs]
         return bibs, bibs_ref, IDs, missing
     else:
         return {"Error": "Unable to get results!",
