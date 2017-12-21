@@ -204,12 +204,10 @@ class TestMetricsSingleInvalidBibcode(TestCase):
     def create_app(self):
         '''Create the wsgi application'''
         app_ = app.create_app()
-        session = mock.Mock()
-        exe = session.execute
-        exe.return_value = []
         return app_
 
-    def test_get_metrics_single_invalid_bibcode(self):
+    @mock.patch('metrics_service.models.execute_SQL_query', return_value=[])
+    def test_get_metrics_single_invalid_bibcode(self, mock_execute_SQL_query):
         '''Test getting exception for a single bibcode'''
         url = url_for('pubmetrics', bibcode='foo')
         r = self.client.get(url)

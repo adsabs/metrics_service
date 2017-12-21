@@ -66,9 +66,10 @@ class TestConfig(TestCase):
 
     def test_config_values(self):
         '''Check if all required config variables are there'''
-        required = ["METRICS_MAX_SUBMITTED", "METRICS_SOLRQUERY_URL",
-                    "SQLALCHEMY_BINDS", "DISCOVERER_PUBLISH_ENDPOINT",
-                    "DISCOVERER_SELF_PUBLISH", "METRICS_MAX_SIMPLE"]
+        required = ["METRICS_MAX_SUBMITTED",
+                    "DISCOVERER_PUBLISH_ENDPOINT",
+                    "DISCOVERER_SELF_PUBLISH", 
+                    "METRICS_MAX_SIMPLE"]
 
         missing = [x for x in required if x not in self.app.config.keys()]
         self.assertTrue(len(missing) == 0)

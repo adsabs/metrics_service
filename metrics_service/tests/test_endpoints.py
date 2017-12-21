@@ -141,7 +141,8 @@ class TestBasicStatsBibcodes(TestCase):
         self.assertEqual(bsr['average number of downloads'], float(Nentries))
         self.assertEqual(bsr['median number of downloads'], float(Nentries))
 
-    def test_get_basic_stats_bibcodes_with_invalid(self):
+    @mock.patch('metrics_service.models.execute_SQL_query', return_value=testdata)
+    def test_get_basic_stats_bibcodes_with_invalid(self, mock_execute_SQL_query):
         '''Test getting just basic stats with an additional invalid bibcode'''
         r = self.client.post(
             url_for('metrics'),
