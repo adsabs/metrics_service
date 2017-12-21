@@ -1,3 +1,7 @@
+### 1.0.23
+
+* ADS microservice normalization: implementation adsmutils, py.test
+
 ### 1.0.22
 
 * alembic fix (env.py) and default values for some db columns

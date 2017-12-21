@@ -13,11 +13,11 @@ import glob
 import unittest
 import requests
 import time
-import app
+from metrics_service import app
 import json
 import httpretty
 import mock
-from models import db, Bind, MetricsModel
+from metrics_service.models import MetricsModel
 
 testset = ['1997ZGlGl..33..173H', '1997BoLMe..85..475M',
            '1997BoLMe..85...81M', '2014bbmb.book..243K', '2012opsa.book..253H']
@@ -30,7 +30,7 @@ def get_test_data(bibcodes=None):
     # We will generate 'reads' and 'downloads' of 1 read/download
     # per year, so that we always have Nentries reads/downloads total
     Nentries = year - 1996 + 1
-    datafiles = glob.glob("%s/tests/unittests/testdata/*.json" % PROJECT_HOME)
+    datafiles = glob.glob("%s/metrics_service/tests/testdata/*.json" % PROJECT_HOME)
     records = []
     for dfile in datafiles:
         with open(dfile) as data_file:
@@ -53,6 +53,7 @@ def get_test_data(bibcodes=None):
         records.append(r)
     return records
 
+testdata = get_test_data()
 
 class TestConfig(TestCase):
 
@@ -118,32 +119,23 @@ class TestHelperFunctions(TestCase):
     def create_app(self):
         '''Create the wsgi application'''
         app_ = app.create_app()
-        db.session = mock.Mock()
-        exe = db.session.execute
-        exe.return_value = get_test_data()
         return app_
 
-    def test_mock_query(self):
+    @mock.patch('metrics_service.models.execute_SQL_query', return_value=testdata)
+    def test_mock_query(self, mock_execute_SQL_query):
         '''Check that session mock behaves the way we set it up'''
+        from metrics_service.models import execute_SQL_query
         expected_attribs = ['_sa_instance_state', 'author_num', 'bibcode',
                             'citation_num', 'citations', 'downloads', 'id',
                             'reads', 'refereed', 'refereed_citation_num',
                             'refereed_citations', 'rn_citation_data']
         # Quering the mock should return a list of MetricsModel instances
-        resp = db.session.execute()
+        resp = execute_SQL_query()
         self.assertEqual(
             sorted(resp[0].__dict__.keys()), sorted(expected_attribs))
         self.assertEqual(
             list(set([x.__class__.__name__ for x in resp])), ['MetricsModel'])
         self.assertTrue(isinstance(resp, list))
-
-    def test_bind_object(self):
-        '''Check that the Bind object is what is expected'''
-        b = Bind('metrics')
-        self.assertEqual(b.__class__.__name__, 'Bind')
-        self.assertEqual('bind' in b.__dict__, True)
-        self.assertEqual(b.bind.__class__.__name__, 'Engine')
-
 
 class TestIDRetrieval(TestCase):
 
@@ -152,17 +144,12 @@ class TestIDRetrieval(TestCase):
     def create_app(self):
         '''Create the wsgi application'''
         app_ = app.create_app()
-        db.session = mock.Mock()
-        db.metrics = mock.Mock()
-        exe = db.session.execute
-        mtr = db.metrics.execute
-        exe.return_value = get_test_data()
-        mtr.return_value = get_test_data()
         return app_
 
-    def test_get_identifiers(self):
+    @mock.patch('metrics_service.models.execute_SQL_query', return_value=testdata)
+    def test_get_identifiers(self, mock_execute_SQL_query):
         '''Test getting the identifiers for a set of bibcodes'''
-        from models import get_identifiers
+        from metrics_service.models import get_identifiers
         data = get_identifiers(testset)
         # We are expecting data to be a dictionary with bibcodes as keys
         # and integers as values (don't really care what the actual values are)
@@ -182,17 +169,12 @@ class TestBasicStatsDataRetrieval(TestCase):
     def create_app(self):
         '''Create the wsgi application'''
         app_ = app.create_app()
-        db.session = mock.Mock()
-        db.metrics = mock.Mock()
-        exe = db.session.execute
-        mtr = db.metrics.execute
-        exe.return_value = get_test_data()
-        mtr.return_value = get_test_data()
         return app_
 
-    def test_get_basic_stats_data(self):
+    @mock.patch('metrics_service.models.execute_SQL_query', return_value=testdata)
+    def test_get_basic_stats_data(self, mock_execute_SQL_query):
         '''Test getting basic stats data'''
-        from models import get_basic_stats_data
+        from metrics_service.models import get_basic_stats_data
         data = get_basic_stats_data(testset)
         # The most important thing here is to test that it is a list
         # of MetricsModel instances
@@ -210,17 +192,12 @@ class TestPublicationDataRetrieval(TestCase):
     def create_app(self):
         '''Create the wsgi application'''
         app_ = app.create_app()
-        db.session = mock.Mock()
-        db.metrics = mock.Mock()
-        exe = db.session.execute
-        mtr = db.metrics.execute
-        exe.return_value = get_test_data()
-        mtr.return_value = get_test_data()
         return app_
 
-    def test_get_publication_data(self):
+    @mock.patch('metrics_service.models.execute_SQL_query', return_value=testdata)
+    def test_get_publication_data(self, mock_execute_SQL_query):
         '''Test getting publication data'''
-        from models import get_publication_data
+        from metrics_service.models import get_publication_data
         data = get_publication_data(testset)
         # The most important thing here is to test that it is a list
         # of MetricsModel instances
@@ -238,17 +215,12 @@ class TestCitationDataRetrieval(TestCase):
     def create_app(self):
         '''Create the wsgi application'''
         app_ = app.create_app()
-        db.session = mock.Mock()
-        db.metrics = mock.Mock()
-        exe = db.session.execute
-        mtr = db.metrics.execute
-        exe.return_value = get_test_data()
-        mtr.return_value = get_test_data()
         return app_
 
-    def test_get_citation_data(self):
+    @mock.patch('metrics_service.models.execute_SQL_query', return_value=testdata)
+    def test_get_citation_data(self, mock_execute_SQL_query):
         '''Test getting citation data'''
-        from models import get_citation_data
+        from metrics_service.models import get_citation_data
         data = get_citation_data(testset)
         # The most important thing here is to test that it is a list
         # of MetricsModel instances
@@ -265,17 +237,12 @@ class TestCitationRetrieval(TestCase):
     def create_app(self):
         '''Create the wsgi application'''
         app_ = app.create_app()
-        db.session = mock.Mock()
-        db.metrics = mock.Mock()
-        exe = db.session.execute
-        mtr = db.metrics.execute
-        exe.return_value = get_test_data()
-        mtr.return_value = get_test_data()
         return app_
 
-    def test_get_citations(self):
+    @mock.patch('metrics_service.models.execute_SQL_query', return_value=testdata)
+    def test_get_citations(self, mock_execute_SQL_query):
         '''Test getting citations'''
-        from models import get_citations
+        from metrics_service.models import get_citations
         data = get_citations(testset)
         # The most important thing here is to test that it is a list
         # of MetricsModel instances
@@ -293,17 +260,12 @@ class TestIndicatorDataRetrieval(TestCase):
     def create_app(self):
         '''Create the wsgi application'''
         app_ = app.create_app()
-        db.session = mock.Mock()
-        db.metrics = mock.Mock()
-        exe = db.session.execute
-        mtr = db.metrics.execute
-        exe.return_value = get_test_data()
-        mtr.return_value = get_test_data()
         return app_
 
-    def test_get_indicator_data(self):
+    @mock.patch('metrics_service.models.execute_SQL_query', return_value=testdata)
+    def test_get_indicator_data(self, mock_execute_SQL_query):
         '''Test getting indicator data'''
-        from models import get_indicator_data
+        from metrics_service.models import get_indicator_data
         data = get_indicator_data(testset)
         # The most important thing here is to test that it is a list
         # of MetricsModel instances
@@ -320,17 +282,12 @@ class TestUsageDataRetrieval(TestCase):
     def create_app(self):
         '''Create the wsgi application'''
         app_ = app.create_app()
-        db.session = mock.Mock()
-        db.metrics = mock.Mock()
-        exe = db.session.execute
-        mtr = db.metrics.execute
-        exe.return_value = get_test_data()
-        mtr.return_value = get_test_data()
         return app_
 
-    def test_get_usage_data(self):
+    @mock.patch('metrics_service.models.execute_SQL_query', return_value=testdata)
+    def test_get_usage_data(self, mock_execute_SQL_query):
         '''Test getting usage data'''
-        from models import get_usage_data
+        from metrics_service.models import get_usage_data
         data = get_usage_data(testset)
         # The most important thing here is to test that it is a list
         # of MetricsModel instances
@@ -347,17 +304,12 @@ class TestToriDataRetrieval(TestCase):
     def create_app(self):
         '''Create the wsgi application'''
         app_ = app.create_app()
-        db.session = mock.Mock()
-        db.metrics = mock.Mock()
-        exe = db.session.execute
-        mtr = db.metrics.execute
-        exe.return_value = get_test_data()
-        mtr.return_value = get_test_data()
         return app_
 
-    def test_get_tori_data(self):
+    @mock.patch('metrics_service.models.execute_SQL_query', return_value=testdata)
+    def test_get_tori_data(self, mock_execute_SQL_query):
         '''Test getting tori data'''
-        from models import get_tori_data
+        from metrics_service.models import get_tori_data
         data = get_tori_data(testset)
         # The most important thing here is to test that it is a list
         # of MetricsModel instances

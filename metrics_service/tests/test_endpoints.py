@@ -9,24 +9,24 @@ from flask import url_for, Flask
 import unittest
 import requests
 import time
-import app
+from metrics_service import app
 import json
 import glob
 import httpretty
 import mock
 from datetime import date, datetime
-from models import db, MetricsModel
+from metrics_service.models import MetricsModel
 
 testset = ['1997ZGlGl..33..173H', '1997BoLMe..85..475M',
            '1997BoLMe..85...81M', '2014bbmb.book..243K', '2012opsa.book..253H']
 
 # Import the JSON document with expected results
-results_file = "%s/tests/unittests/testdata/expected_results" % PROJECT_HOME
+results_file = "%s/metrics_service/tests/testdata/expected_results" % PROJECT_HOME
 with open(results_file) as data_file:
     expected_results = json.load(data_file)
 
 # Import the JSON document with expected results
-results_file = "%s/tests/unittests/testdata/expected_results" % PROJECT_HOME
+results_file = "%s/metrics_service/tests/testdata/expected_results" % PROJECT_HOME
 with open(results_file) as data_file:
     expected_results = json.load(data_file)
 
@@ -51,7 +51,7 @@ def get_test_data(bibcodes=None):
     # has the correct length, given the current year (however, the reads
     # /downloads in the stub data never change
     Nentries = year - 1996 + 1
-    datafiles = glob.glob("%s/tests/unittests/testdata/*.json" % PROJECT_HOME)
+    datafiles = glob.glob("%s/metrics_service/tests/testdata/*.json" % PROJECT_HOME)
     records = []
     for dfile in datafiles:
         with open(dfile) as data_file:
@@ -75,6 +75,7 @@ def get_test_data(bibcodes=None):
     records = sorted(records, key=lambda a: a.citation_num, reverse=True)
     return records
 
+testdata = get_test_data(bibcodes=testset)
 
 class TestBasicStatsBibcodes(TestCase):
 
@@ -83,15 +84,10 @@ class TestBasicStatsBibcodes(TestCase):
     def create_app(self):
         '''Create the wsgi application'''
         app_ = app.create_app()
-        db.session = mock.Mock()
-        db.metrics = mock.Mock()
-        exe = db.session.execute
-        mtr = db.metrics.execute
-        exe.return_value = get_test_data(bibcodes=testset)
-        mtr.return_value = get_test_data(bibcodes=testset)
         return app_
 
-    def test_get_basic_stats_bibcodes(self):
+    @mock.patch('metrics_service.models.execute_SQL_query', return_value=testdata)
+    def test_get_basic_stats_bibcodes(self, mock_execute_SQL_query):
         '''Test getting just basic stats when valid bibcodes are submitted'''
         r = self.client.post(
             url_for('metrics'),
@@ -156,53 +152,6 @@ class TestBasicStatsBibcodes(TestCase):
         # The invalid bibcode should be returned as 'skipped bibcode'
         self.assertEqual(r.json['skipped bibcodes'], ['foo'])
 
-
-class TestBasicStatsQuery(TestCase):
-
-    '''Check if the basic stats are returned for a valid query'''
-
-    def create_app(self):
-        '''Create the wsgi application'''
-        app_ = app.create_app()
-        db.session = mock.Mock()
-        db.metrics = mock.Mock()
-        exe = db.session.execute
-        mtr = db.metrics.execute
-        exe.return_value = get_test_data(bibcodes=testset)
-        mtr.return_value = get_test_data(bibcodes=testset)
-        return app_
-
-    @httpretty.activate
-    def test_get_basic_stats_query(self):
-        '''Test getting just basic stats when a valid query is submitted'''
-        httpretty.register_uri(
-            httpretty.GET, self.app.config.get('METRICS_SOLRQUERY_URL'),
-            content_type='application/json',
-            status=200,
-            body="""{
-            "responseHeader":{
-            "status":0, "QTime":0,
-            "params":{ "fl":"bibcode", "indent":"true", "wt":"json", "q":"*"}},
-            "response":{"numFound":10456930,"start":0,"docs":%s
-            }}""" % json.dumps(mockdata))
-        r = self.client.post(
-            url_for('metrics'),
-            content_type='application/json',
-            data=json.dumps({'query': 'foo', 'types': ['basic']}))
-        self.assertTrue(r.status_code == 200)
-        # Check that the right info is returned; nothing more, nothing less
-        self.assertTrue(
-            r.json.keys(), [u'basic stats',
-                            u'skipped bibcodes',
-                            u'basic stats refereed'])
-        # There should be no skipped bibcodes
-        self.assertEqual(r.json['skipped bibcodes'], [])
-        # We have already checked in testMetricsFunctions unittests that the
-        # correct bibcodes are returned and given to the metrics framework, so
-        # the results returned are by definition the same and need not be
-        # tested
-
-
 class TestCitationStatsBibcodes(TestCase):
 
     '''Check if the citation stats are returned for valid bibcodes'''
@@ -210,15 +159,10 @@ class TestCitationStatsBibcodes(TestCase):
     def create_app(self):
         '''Create the wsgi application'''
         app_ = app.create_app()
-        db.session = mock.Mock()
-        db.metrics = mock.Mock()
-        exe = db.session.execute
-        mtr = db.metrics.execute
-        exe.return_value = get_test_data(bibcodes=testset)
-        mtr.return_value = get_test_data(bibcodes=testset)
         return app_
 
-    def test_get_citation_stats_bibcodes(self):
+    @mock.patch('metrics_service.models.execute_SQL_query', return_value=testdata)
+    def test_get_citation_stats_bibcodes(self, mock_execute_SQL_query):
         '''Test getting just citation stats when valid bibcodes
            are submitted'''
         r = self.client.post(
@@ -260,15 +204,10 @@ class TestIndicatorsBibcodes(TestCase):
     def create_app(self):
         '''Create the wsgi application'''
         app_ = app.create_app()
-        db.session = mock.Mock()
-        db.metrics = mock.Mock()
-        exe = db.session.execute
-        mtr = db.metrics.execute
-        exe.return_value = get_test_data(bibcodes=testset)
-        mtr.return_value = get_test_data(bibcodes=testset)
         return app_
 
-    def test_get_indicators_bibcodes(self):
+    @mock.patch('metrics_service.models.execute_SQL_query', return_value=testdata)
+    def test_get_indicators_bibcodes(self, mock_execute_SQL_query):
         '''Test getting just the indicators when valid bibcodes
            are submitted'''
         r = self.client.post(
@@ -327,15 +266,10 @@ class TestPublicationHistogramsBibcodes(TestCase):
     def create_app(self):
         '''Create the wsgi application'''
         app_ = app.create_app()
-        db.session = mock.Mock()
-        db.metrics = mock.Mock()
-        exe = db.session.execute
-        mtr = db.metrics.execute
-        exe.return_value = get_test_data(bibcodes=testset)
-        mtr.return_value = get_test_data(bibcodes=testset)
         return app_
 
-    def test_get_publication_histograms_bibcodes(self):
+    @mock.patch('metrics_service.models.execute_SQL_query', return_value=testdata)
+    def test_get_publication_histograms_bibcodes(self, mock_execute_SQL_query):
         '''Test getting just publication histograms when valid bibcodes
            are submitted'''
         r = self.client.post(
@@ -376,15 +310,10 @@ class TestUsageHistogramsBibcodes(TestCase):
     def create_app(self):
         '''Create the wsgi application'''
         app_ = app.create_app()
-        db.session = mock.Mock()
-        db.metrics = mock.Mock()
-        exe = db.session.execute
-        mtr = db.metrics.execute
-        exe.return_value = get_test_data(bibcodes=testset)
-        mtr.return_value = get_test_data(bibcodes=testset)
         return app_
 
-    def test_get_reads_histograms_bibcodes(self):
+    @mock.patch('metrics_service.models.execute_SQL_query', return_value=testdata)
+    def test_get_reads_histograms_bibcodes(self, mock_execute_SQL_query):
         '''Test getting just usage histograms when valid bibcodes
            are submitted'''
         r = self.client.post(
@@ -456,15 +385,10 @@ class TestCitationHistogramsBibcodes(TestCase):
     def create_app(self):
         '''Create the wsgi application'''
         app_ = app.create_app()
-        db.session = mock.Mock()
-        db.metrics = mock.Mock()
-        exe = db.session.execute
-        mtr = db.metrics.execute
-        exe.return_value = get_test_data(bibcodes=testset)
-        mtr.return_value = get_test_data(bibcodes=testset)
         return app_
 
-    def test_get_citation_histograms_bibcodes(self):
+    @mock.patch('metrics_service.models.execute_SQL_query', return_value=testdata)
+    def test_get_citation_histograms_bibcodes(self, mock_execute_SQL_query):
         '''Test getting just citation histograms when valid bibcodes
            are submitted'''
         r = self.client.post(
@@ -507,15 +431,10 @@ class TestAllHistogramsBibcodes(TestCase):
     def create_app(self):
         '''Create the wsgi application'''
         app_ = app.create_app()
-        db.session = mock.Mock()
-        db.metrics = mock.Mock()
-        exe = db.session.execute
-        mtr = db.metrics.execute
-        exe.return_value = get_test_data(bibcodes=testset)
-        mtr.return_value = get_test_data(bibcodes=testset)
         return app_
 
-    def test_get_all_histograms_bibcodes(self):
+    @mock.patch('metrics_service.models.execute_SQL_query', return_value=testdata)
+    def test_get_all_histograms_bibcodes(self, mock_execute_SQL_query):
         '''Test getting all histograms when no specific type is specified'''
         r = self.client.post(
             url_for('metrics'),
@@ -536,15 +455,10 @@ class TestTimeSeriesBibcodes(TestCase):
     def create_app(self):
         '''Create the wsgi application'''
         app_ = app.create_app()
-        db.session = mock.Mock()
-        db.metrics = mock.Mock()
-        exe = db.session.execute
-        mtr = db.metrics.execute
-        exe.return_value = get_test_data(bibcodes=testset)
-        mtr.return_value = get_test_data(bibcodes=testset)
         return app_
 
-    def test_get_timeseries_bibcodes(self):
+    @mock.patch('metrics_service.models.execute_SQL_query', return_value=testdata)
+    def test_get_timeseries_bibcodes(self, mock_execute_SQL_query):
         '''Test getting just time series when valid bibcodes are submitted'''
         r = self.client.post(
             url_for('metrics'),
@@ -573,15 +487,10 @@ class TestEverythingBibcodes(TestCase):
     def create_app(self):
         '''Create the wsgi application'''
         app_ = app.create_app()
-        db.session = mock.Mock()
-        db.metrics = mock.Mock()
-        exe = db.session.execute
-        mtr = db.metrics.execute
-        exe.return_value = get_test_data(bibcodes=testset)
-        mtr.return_value = get_test_data(bibcodes=testset)
         return app_
 
-    def test_get_everything_bibcodes(self):
+    @mock.patch('metrics_service.models.execute_SQL_query', return_value=testdata)
+    def test_get_everything_bibcodes(self, mock_execute_SQL_query):
         '''Test getting everything when no specific metrics type
            is specified'''
         r = self.client.post(
@@ -607,15 +516,10 @@ class TestMetricsSingleBibcode(TestCase):
     def create_app(self):
         '''Create the wsgi application'''
         app_ = app.create_app()
-        db.session = mock.Mock()
-        db.metrics = mock.Mock()
-        exe = db.session.execute
-        mtr = db.metrics.execute
-        exe.return_value = get_test_data(bibcodes=testset)
-        mtr.return_value = get_test_data(bibcodes=testset)
         return app_
 
-    def test_get_metrics_single_bibcode(self):
+    @mock.patch('metrics_service.models.execute_SQL_query', return_value=testdata)
+    def test_get_metrics_single_bibcode(self, mock_execute_SQL_query):
         '''Test getting metrics for a single bibcode'''
         url = url_for('pubmetrics', bibcode='1997BoLMe..85..475M')
         r = self.client.get(url)

@@ -15,11 +15,11 @@ import itertools
 import unittest
 import requests
 import time
-import app
+from metrics_service import app
 import json
 import httpretty
 import mock
-from models import db, Bind, MetricsModel
+from metrics_service.models import MetricsModel
 
 current_year = datetime.now().year
 
@@ -43,7 +43,7 @@ testset = ['1997ZGlGl..33..173H', '1997BoLMe..85..475M',
            '1997BoLMe..85...81M', '2014bbmb.book..243K', '2012opsa.book..253H']
 
 # Import the JSON document with expected results
-results_file = "%s/tests/unittests/testdata/expected_results" % PROJECT_HOME
+results_file = "%s/metrics_service/tests/testdata/expected_results" % PROJECT_HOME
 with open(results_file) as data_file:
     expected_results = json.load(data_file)
 
@@ -73,7 +73,7 @@ def get_test_data(bibcodes=None, htest=False, no_cits=False, no_refcits=False,
     # has the correct length, given the current year (however, the reads
     # /downloads in the stub data never change
     Nentries = year - 1996 + 1
-    datafiles = glob.glob("%s/tests/unittests/testdata/*.json" % PROJECT_HOME)
+    datafiles = glob.glob("%s/metrics_service//tests/testdata/*.json" % PROJECT_HOME)
     records = []
     if single:
         no_cits = True
@@ -132,28 +132,24 @@ def get_test_data(bibcodes=None, htest=False, no_cits=False, no_refcits=False,
     records = sorted(records, key=lambda a: a.citation_num, reverse=True)
     return records
 
-
 class TestHirschExtreme(TestCase):
 
     '''Check if h index is the number of records when for all records:
        Ncits > Nrecs'''
 
+    mockdata = get_test_data(bibcodes=testset, htest=True)
+
     def create_app(self):
         '''Create the wsgi application'''
         app_ = app.create_app()
-        db.session = mock.Mock()
-        db.metrics = mock.Mock()
-        exe = db.session.execute
-        mtr = db.metrics.execute
-        exe.return_value = get_test_data(bibcodes=testset, htest=True)
-        mtr.return_value = get_test_data(bibcodes=testset, htest=True)
         return app_
-
-    def test_get_h_extreme(self):
+    
+    @mock.patch('metrics_service.models.execute_SQL_query', return_value=mockdata)
+    def test_get_h_extreme(self, mock_execute_SQL_query):
         '''Test h index for only records where Ncits > Nrecs:
            h should equal Nrecs'''
-        from metrics import get_indicators
-        indic, indic_ref = get_indicators(testset)
+        import metrics_service.metrics as m
+        indic, indic_ref = m.get_indicators(testset)
         self.assertEqual(indic['h'], len(testset))
         self.assertEqual(indic['g'], len(testset))
 
@@ -162,21 +158,18 @@ class TestHirschNoCits(TestCase):
 
     '''Check if h index is zero if there are no citations'''
 
+    mockdata = get_test_data(bibcodes=testset, no_cits=True)
+
     def create_app(self):
         '''Create the wsgi application'''
         app_ = app.create_app()
-        db.session = mock.Mock()
-        db.metrics = mock.Mock()
-        exe = db.session.execute
-        mtr = db.metrics.execute
-        exe.return_value = get_test_data(bibcodes=testset, no_cits=True)
-        mtr.return_value = get_test_data(bibcodes=testset, no_cits=True)
         return app_
 
-    def test_get_h_nocits(self):
+    @mock.patch('metrics_service.models.execute_SQL_query', return_value=mockdata)
+    def test_get_h_nocits(self, mock_execute_SQL_query):
         '''Test h index for only records where Ncits > Nrecs:
            h should equal Nrecs'''
-        from metrics import get_indicators
+        from metrics_service.metrics import get_indicators
         indic, indic_ref = get_indicators(testset)
         self.assertEqual(indic['h'], 0)
         self.assertEqual(indic['g'], 0)
@@ -186,20 +179,17 @@ class TestToriExtreme(TestCase):
 
     '''Check if the Tori is zero if all citations are self-citations'''
 
+    mockdata = get_test_data(bibcodes=testset, tori_test=True)
+
     def create_app(self):
         '''Create the wsgi application'''
         app_ = app.create_app()
-        db.session = mock.Mock()
-        db.metrics = mock.Mock()
-        exe = db.session.execute
-        mtr = db.metrics.execute
-        exe.return_value = get_test_data(bibcodes=testset, tori_test=True)
-        mtr.return_value = get_test_data(bibcodes=testset, tori_test=True)
         return app_
-
-    def test_get_tori(self):
+    
+    @mock.patch('metrics_service.models.execute_SQL_query', return_value=mockdata)
+    def test_get_tori(self, mock_execute_SQL_query):
         '''Test getting Tori when all citations are self-citations'''
-        from metrics import get_tori
+        from metrics_service.metrics import get_tori
         tori, tori_ref, riq, riq_ref, d = get_tori(testset, testset)
         self.assertEqual(tori, 0)
 
@@ -208,20 +198,17 @@ class TestNoUsage(TestCase):
 
     '''Check if we get empty histograms for no usage'''
 
+    mockdata = get_test_data(bibcodes=testset, no_usage=True)    
+
     def create_app(self):
         '''Create the wsgi application'''
         app_ = app.create_app()
-        db.session = mock.Mock()
-        db.metrics = mock.Mock()
-        exe = db.session.execute
-        mtr = db.metrics.execute
-        exe.return_value = get_test_data(bibcodes=testset, no_usage=True)
-        mtr.return_value = get_test_data(bibcodes=testset, no_usage=True)
         return app_
-
-    def test_no_usage(self):
+    
+    @mock.patch('metrics_service.models.execute_SQL_query', return_value=mockdata)
+    def test_no_usage(self, mock_execute_SQL_query):
         '''Test getting usage histograms when there is no usage'''
-        from metrics import get_usage_histograms
+        from metrics_service.metrics import get_usage_histograms
         # Expected histogram (for all)
         expected = {year: 0 for year in range(1996, current_year + 1)}
         # Get the reads histograms
@@ -245,20 +232,17 @@ class TestNoCitations(TestCase):
 
     '''Check if we get empty histograms for no citations'''
 
+    mockdata = get_test_data(bibcodes=testset, no_cits=True)
+
     def create_app(self):
         '''Create the wsgi application'''
         app_ = app.create_app()
-        db.session = mock.Mock()
-        db.metrics = mock.Mock()
-        exe = db.session.execute
-        mtr = db.metrics.execute
-        exe.return_value = get_test_data(bibcodes=testset, no_cits=True)
-        mtr.return_value = get_test_data(bibcodes=testset, no_cits=True)
         return app_
-
-    def test_no_citations(self):
+    
+    @mock.patch('metrics_service.models.execute_SQL_query', return_value=mockdata)
+    def test_no_citations(self, mock_execute_SQL_query):
         '''Test getting citation histograms when there are no citations'''
-        from metrics import get_citation_histograms
+        from metrics_service.metrics import get_citation_histograms
         years = [int(b[:4]) for b in testset]
         # Expected histogram (for all)
         expected = {year: 0 for year in range(min(years), current_year + 1)}
@@ -280,20 +264,16 @@ class TestNoRefereedCitations(TestCase):
 
     '''Check if we get empty refereed histograms for no refereed citations'''
 
+    mockdata = get_test_data(bibcodes=testset, no_refcits=True)
     def create_app(self):
         '''Create the wsgi application'''
         app_ = app.create_app()
-        db.session = mock.Mock()
-        db.metrics = mock.Mock()
-        exe = db.session.execute
-        mtr = db.metrics.execute
-        exe.return_value = get_test_data(bibcodes=testset, no_refcits=True)
-        mtr.return_value = get_test_data(bibcodes=testset, no_refcits=True)
         return app_
 
-    def test_no_refereed_citations(self):
+    @mock.patch('metrics_service.models.execute_SQL_query', return_value=mockdata)
+    def test_no_refereed_citations(self, mock_execute_SQL_query):
         '''Test getting citation histograms when no refereed citations'''
-        from metrics import get_citation_histograms
+        from metrics_service.metrics import get_citation_histograms
         years = [int(b[:4]) for b in testset]
         # Expected histogram (for all)
         expected = {year: 0 for year in range(min(years), current_year + 1)}
@@ -311,22 +291,17 @@ class TestNoTimeSeries(TestCase):
 
     '''Check if we get empty time series for no usage and citations'''
 
+    mockdata = get_test_data(bibcodes=testset, no_cits=True, no_usage=True)
+
     def create_app(self):
         '''Create the wsgi application'''
         app_ = app.create_app()
-        db.session = mock.Mock()
-        db.metrics = mock.Mock()
-        exe = db.session.execute
-        mtr = db.metrics.execute
-        exe.return_value = get_test_data(
-            bibcodes=testset, no_cits=True, no_usage=True)
-        mtr.return_value = get_test_data(
-            bibcodes=testset, no_cits=True, no_usage=True)
         return app_
 
-    def test_no_refereed_citations(self):
+    @mock.patch('metrics_service.models.execute_SQL_query', return_value=mockdata)
+    def test_no_refereed_citations(self, mock_execute_SQL_query):
         '''Test getting time series when there is no usage and no citations'''
-        from metrics import get_time_series
+        from metrics_service.metrics import get_time_series
         years = [int(b[:4]) for b in testset]
         # Expected histogram (for all)
         expected = {year: 0 for year in range(min(years), current_year + 1)}
@@ -341,18 +316,15 @@ class TestMetricsSingleBibcodeNoUsageCitations(TestCase):
 
     '''Check single bibcode without usage and citations'''
 
+    mockdata = get_test_data(bibcodes=testset, single=True)
+
     def create_app(self):
         '''Create the wsgi application'''
         app_ = app.create_app()
-        db.session = mock.Mock()
-        db.metrics = mock.Mock()
-        exe = db.session.execute
-        mtr = db.metrics.execute
-        exe.return_value = get_test_data(bibcodes=testset, single=True)
-        mtr.return_value = get_test_data(bibcodes=testset, single=True)
         return app_
 
-    def test_get_metrics_single_invalid_bibcode(self):
+    @mock.patch('metrics_service.models.execute_SQL_query', return_value=mockdata)
+    def test_get_metrics_single_invalid_bibcode(self, mock_execute_SQL_query):
         '''Test getting data for a single bibcode without
            usage and citations'''
         url = url_for('pubmetrics', bibcode='1997BoLMe..85..475M')
