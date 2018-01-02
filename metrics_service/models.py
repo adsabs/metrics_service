@@ -100,8 +100,6 @@ def get_indicator_data(IDs):
               ORDER BY citation_num DESC"
     SQL = rawSQL % IDstr
     results = execute_SQL_query(SQL)
-    print "XXXX"
-    print results
     return results
 
 
