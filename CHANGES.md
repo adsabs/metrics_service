@@ -1,3 +1,7 @@
+### 1.0.24
+
+* maintenance update
+
 ### 1.0.23
 
 * ADS microservice normalization: implementation adsmutils, py.test
