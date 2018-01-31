@@ -1,3 +1,7 @@
+### 1.0.25
+
+* Bug fix: calculation of h and g in time series
+
 ### 1.0.24
 
 * maintenance update
