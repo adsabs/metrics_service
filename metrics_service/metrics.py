@@ -657,9 +657,9 @@ def get_time_series(identifiers, bibcodes, data=None, usagedata=None,
                 p.bibcode[:4]) > year - 10 and p.reads and
                 len(p.reads) == Nentries])
         try:
-            h[year] = max([i for i, n in enumerate(citations) if i <= n])
+            h[year] = max([i for i, n in enumerate(citations, 1) if i <= n])
             g[year] = max(
-                [i for i, n in enumerate(np.cumsum(citations, axis=0)) if
+                [i for i, n in enumerate(np.cumsum(citations, axis=0), 1) if
                  i**2 <= n])
         except:
             h[year] = 0

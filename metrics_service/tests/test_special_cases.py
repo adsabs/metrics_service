@@ -307,6 +307,8 @@ class TestNoTimeSeries(TestCase):
         expected = {year: 0 for year in range(min(years), current_year + 1)}
         # Get the reads histograms
         ts = get_time_series(testset, testset)
+        print "XXX"
+        print ts
         indicators = ['h', 'g', 'i10', 'i100', 'read10']
         for indicator in indicators:
             self.assertEqual(ts[indicator], expected)

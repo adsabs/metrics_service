@@ -524,11 +524,13 @@ class TestTimeSeries(TestCase):
         from metrics_service.metrics import get_time_series
 
         ts = get_time_series(testset, testset)
+        
         # The time series get test over the range of publication years
         years = [int(b[:4]) for b in testset]
         yrange = range(min(years), max(years) + 1)
         indicators = ['h', 'g', 'i10', 'i100', 'read10']
         for indicator in indicators:
+            print indicator
             serie = {y: ts[indicator][y] for y in yrange}
             expected = {
                 int(k): v for k, v in
