@@ -1,3 +1,7 @@
+### 1.0.26
+
+* requirements.txt update: version specification for adsmutils
+
 ### 1.0.25
 
 * Bug fix: calculation of h and g in time series
