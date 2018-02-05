@@ -36,7 +36,8 @@ class MetricsModel(Base):
 def execute_SQL_query(query):
     with current_app.session_scope() as session:
         res = session.execute(query)
-    return [r for r in res]
+        results = [r for r in res]
+        return results
 
 def get_identifiers(bibcodes):
     bibstr = ",".join(map(lambda a: "\'%s\'" % a, bibcodes))

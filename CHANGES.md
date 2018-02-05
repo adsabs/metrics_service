@@ -1,3 +1,7 @@
+### 1.0.26
+
+* Minor code cleanup / profiler fix
+
 ### 1.0.25
 
 * Bug fix: calculation of h and g in time series
