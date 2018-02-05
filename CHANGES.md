@@ -1,3 +1,7 @@
+### 1.0.27
+
+* Minor code cleanup / profiler fix
+
 ### 1.0.26
 
 * requirements.txt update: version specification for adsmutils
