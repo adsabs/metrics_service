@@ -11,6 +11,7 @@ from sqlalchemy.dialects import postgresql
 from sqlalchemy.engine.result import ResultProxy
 from sqlalchemy.ext.declarative import declarative_base
 import sys
+import psycopg2
 
 Base = declarative_base()
 
@@ -35,8 +36,11 @@ class MetricsModel(Base):
 
 def execute_SQL_query(query):
     with current_app.session_scope() as session:
-        res = session.execute(query)
-        results = [r for r in res]
+        try:
+            results = session.execute(query).fetchall()
+        except psycopg2.InterfaceError:
+            current_app.logger.error('cursor already closed error with query: {}'.format(query))
+            raise
         return results
 
 def get_identifiers(bibcodes):
