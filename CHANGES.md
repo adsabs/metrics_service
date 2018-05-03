@@ -1,3 +1,10 @@
+
+### 1.0.28
+
+* Execute SQL query in models now uses fetchall(), more efficient and less prone 
+  to database connection errors than building an array with an inner loop (which
+  may use fetchone() many times)
+
 ### 1.0.27
 
 * Minor code cleanup / profiler fix

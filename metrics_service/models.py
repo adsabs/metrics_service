@@ -36,11 +36,7 @@ class MetricsModel(Base):
 
 def execute_SQL_query(query):
     with current_app.session_scope() as session:
-        try:
-            results = session.execute(query).fetchall()
-        except psycopg2.InterfaceError:
-            current_app.logger.error('cursor already closed error with query: {}'.format(query))
-            raise
+        results = session.execute(query).fetchall()
         return results
 
 def get_identifiers(bibcodes):
