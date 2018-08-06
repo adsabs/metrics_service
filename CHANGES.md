@@ -1,4 +1,8 @@
 
+### 1.0.29
+ 
+* Enabled JSON stdout logging and HTTP connection pool
+
 ### 1.0.28
 
 * Execute SQL query in models now uses fetchall(), more efficient and less prone 
