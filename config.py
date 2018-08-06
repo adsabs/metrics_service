@@ -1,3 +1,4 @@
+LOG_STDOUT = True
 # Specify token needed to query the API
 METRICS_API_TOKEN = None
 # Specify the maximum number of bibcodes allowed to get metrics for
