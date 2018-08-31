@@ -1,4 +1,8 @@
 
+### 1.0.32
+ 
+* Recovered missing requirement
+
 ### 1.0.31
  
 * Removed unnecessary requirements
