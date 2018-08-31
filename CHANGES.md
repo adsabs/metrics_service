@@ -1,4 +1,8 @@
 
+### 1.0.31
+ 
+* Removed unnecessary requirements
+
 ### 1.0.30
  
 * Updated adsmutils requirement
