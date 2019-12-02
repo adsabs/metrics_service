@@ -716,6 +716,7 @@ def single_citation_report(bibc):
     refcithist = cy.frequencies(refcityears)
     histograms['citations'] = merge_dictionaries(dict(nullhist), cithist)
     histograms['ref_citations'] = merge_dictionaries(dict(nullhist), refcithist)
+    # Have the histograms start at the publication year
     histograms['reads'] = dict([(1996 + i, v) for i, v in enumerate(reads) if 1996+i >= int(bibc[:4])])
     histograms['downloads'] = dict([(1996 + i, v) for i, v in enumerate(downloads) if 1996+i >= int(bibc[:4])])
 
