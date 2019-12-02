@@ -24,6 +24,7 @@ from models import get_publication_data
 from models import get_usage_data
 from models import get_indicator_data
 from models import get_tori_data
+from models import get_citations_single
 
 # Helper methods
 
@@ -686,3 +687,37 @@ def get_time_series(identifiers, bibcodes, data=None, usagedata=None,
         series['tori'] = tori
 
     return series
+
+def single_citation_report(bibc):
+    histograms = {}
+    current_year = datetime.now().year
+    Nentries = current_year - 1996 + 1
+    zeros = [[0] * Nentries]
+    data = get_citations_single(bibc)
+    try:
+        cityears = [int(b[:4]) for b in data[0].citations]
+    except:
+        cityears = []
+    try:
+        refcityears = [int(b[:4]) for b in data[0].refereed_citations]
+    except:
+        refcityears = []
+    try:
+        reads = [int(r) for r in data[0].reads]
+    except:
+        reads = zeros
+    try:
+        downloads = [int(d) for d in data[0].downloads]
+    except:
+        downloads = zeros
+
+    nullhist = [(y, 0) for y in range(min(cityears+refcityears), current_year + 1)]
+    cithist = cy.frequencies(cityears)
+    refcithist = cy.frequencies(refcityears)
+    histograms['citations'] = merge_dictionaries(dict(nullhist), cithist)
+    histograms['ref_citations'] = merge_dictionaries(dict(nullhist), refcithist)
+    # Have the histograms start at the publication year
+    histograms['reads'] = dict([(1996 + i, v) for i, v in enumerate(reads) if 1996+i >= int(bibc[:4])])
+    histograms['downloads'] = dict([(1996 + i, v) for i, v in enumerate(downloads) if 1996+i >= int(bibc[:4])])
+
+    return histograms

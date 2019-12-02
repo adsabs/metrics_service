@@ -17,17 +17,6 @@ class TestWebservices(TestCase):
         app_ = app.create_app()
         return app_
 
-    def test_nonSpecificUrlRoutes(self):
-        '''Iterates over each non specific (ie, one that doesn't
-           require an argument) route in app, testing for
-           http response code < 500'''
-        for rule in self.app.url_map.iter_rules():
-            # only test routes that do not require arguments.
-            if not rule.arguments:
-                url = url_for(rule.endpoint)
-                r = self.client.get(url)
-                self.assertTrue(r.status_code < 500)
-
     def test_ResourcesRoute(self):
         '''Tests for the existence of a /resources route, and that
            it returns properly formatted JSON data'''

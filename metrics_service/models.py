@@ -122,3 +122,8 @@ def get_tori_data(IDs):
     SQL = rawSQL % IDstr
     results = execute_SQL_query(SQL)
     return results
+
+def get_citations_single(bibcode):
+    SQL = "SELECT citations, refereed_citations, reads, downloads FROM metrics WHERE bibcode = '%s'" % bibcode
+    results = execute_SQL_query(SQL)
+    return results
