@@ -1,3 +1,6 @@
+### 1.0.33
+
+* Support for export of individual citation/usage histograms (equivalent to the Classic nph-ref_history?refs=CITATIONSi|AR) 
 
 ### 1.0.32
  

@@ -22,6 +22,9 @@ class TestWebservices(TestCase):
            require an argument) route in app, testing for
            http response code < 500'''
         for rule in self.app.url_map.iter_rules():
+            # skip the following endpoints
+            if rule.endpoint in ['ready','alive']:
+                continue
             # only test routes that do not require arguments.
             if not rule.arguments:
                 url = url_for(rule.endpoint)

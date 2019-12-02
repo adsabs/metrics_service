@@ -1,6 +1,6 @@
 from werkzeug.serving import run_simple
 from flask import Flask
-from views import Metrics, PubMetrics
+from views import Metrics, PubMetrics, DetailMetrics
 from flask_restful import Api
 from flask_discoverer import Discoverer
 from adsmutils import ADSFlask
@@ -22,6 +22,7 @@ def create_app(**config):
     api = Api(app)
     api.add_resource(Metrics, '/')
     api.add_resource(PubMetrics, '/<string:bibcode>')
+    api.add_resource(DetailMetrics, '/detail')
 
     discoverer = Discoverer(app)
 

@@ -2,6 +2,7 @@ from flask import current_app, request
 from flask_restful import Resource
 from flask_discoverer import advertise
 from metrics import generate_metrics
+from metrics import single_citation_report
 import time
 
 allowed_types = [
@@ -113,3 +114,45 @@ class PubMetrics(Resource):
         else:
             return {'Error': 'Unable to get results!',
                     'Error Info': 'No data available to generate metrics'}, 200
+
+class DetailMetrics(Resource):
+    """Get a list of metrics data for individual records"""
+    scopes = []
+    rate_limit = [1000, 60 * 60 * 24]
+    decorators = [advertise('scopes', 'rate_limit')]
+
+    def post(self):
+        details = {}
+        details['skipped bibcodes'] = []
+        try:
+            bibcodes = map(str, request.json['bibcodes'])
+        except:
+            bibcodes = []
+        if len(bibcodes) == 0:
+            current_app.logger.warning('Individual metrics requested, but no bibcodes supplied!')
+            return {'Error': 'Unable to get results!',
+                    'Error Info': 'No bibcodes found in POST body'}, 403
+        max_records = current_app.config.get('METRICS_MAX_DETAIL')
+        if len(bibcodes) > max_records:
+            current_app.logger.warning('Individual metrics requested for %s bibcodes. Maximum is: %s!'%(len(bibcodes), max_records))
+            return {'Error': 'Unable to get results!',
+                    'Error Info': 'No results: number of submitted \
+                     bibcodes exceeds maximum number'}, 403
+        current_app.logger.info('Individual metrics requested for %s bibcodes'%len(bibcodes))
+        stime = time.time()
+        for bibcode in bibcodes:
+            try:
+                citdata = single_citation_report(bibcode)
+                details[bibcode] = citdata
+            except:
+                details['skipped bibcodes'].append(bibcode)
+                continue
+        # otherwise we have real results or an empty dictionary
+        if details:
+            duration = time.time() - stime
+            current_app.logger.info('Individual metrics request successfully completed in %s real seconds'%duration)
+            return details
+        else:
+            current_app.logger.info('Individual metrics request returned empty result')
+            return {'Error': 'Unable to get results!',
+                    'Error Info': 'No data available to generate individual metrics'}, 200
