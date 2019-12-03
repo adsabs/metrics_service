@@ -1,3 +1,7 @@
+### 1.0.34
+
+* Update of psycopg2 version in requirements.txt
+
 ### 1.0.33
 
 * Support for export of individual citation/usage histograms (equivalent to the Classic nph-ref_history?refs=CITATIONSi|AR) 
