@@ -4,6 +4,6 @@ Flask-Script==2.0.5
 alembic==0.8.9
 numpy==1.11.3
 cytoolz==0.8.2
-psycopg2==2.7.1
+psycopg2==2.8.4
 simplejson==3.10.0
 toolz==0.8.2
