@@ -1,3 +1,7 @@
+### 1.0.35
+
+* Maintenance release: fix for alembic upgrade
+
 ### 1.0.34
 
 * Update of psycopg2 version in requirements.txt
