@@ -73,11 +73,6 @@ class TestConfig(TestCase):
 
         missing = [x for x in required if x not in self.app.config.keys()]
         self.assertTrue(len(missing) == 0)
-        # Check if API has an actual value if we have a 'local_config.py'
-        # (not available when testing with Travis)
-        if os.path.exists("%s/local_config.py" % PROJECT_HOME):
-            self.assertTrue(
-                self.app.config.get('METRICS_API_TOKEN', None) != None)
 
 
 class TestMetricsModel(TestCase):
