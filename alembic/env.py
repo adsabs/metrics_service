@@ -47,7 +47,7 @@ def get_app_config(key):
     if opath not in sys.path:
         sys.path.insert(0, opath)
         
-    from service import app as app_module
+    from metrics_service import app as app_module
     app = app_module.create_app()
     
     print 'Getting actual config for', key, app.config.get(key)
