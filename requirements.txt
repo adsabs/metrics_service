@@ -7,3 +7,4 @@ cytoolz==0.8.2
 psycopg2==2.8.4
 simplejson==3.10.0
 toolz==0.8.2
+Werkzeug==0.15.3
