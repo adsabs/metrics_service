@@ -1,8 +1,9 @@
+from __future__ import absolute_import
 from flask import current_app, request
 from flask_restful import Resource
 from flask_discoverer import advertise
-from metrics import generate_metrics
-from metrics import single_citation_report
+from .metrics import generate_metrics
+from .metrics import single_citation_report
 import time
 
 allowed_types = [

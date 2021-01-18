@@ -1,7 +1,8 @@
+from __future__ import absolute_import
 from flask.ext.script import Manager
 from flask.ext.migrate import Migrate, MigrateCommand
 #from models import db
-from app import create_app
+from .app import create_app
 
 app_ = create_app()
 

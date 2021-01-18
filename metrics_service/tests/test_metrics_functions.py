@@ -1,3 +1,4 @@
+from __future__ import print_function
 import sys
 import os
 PROJECT_HOME = os.path.abspath(
@@ -530,7 +531,7 @@ class TestTimeSeries(TestCase):
         yrange = range(min(years), max(years) + 1)
         indicators = ['h', 'g', 'i10', 'i100', 'read10']
         for indicator in indicators:
-            print indicator
+            print(indicator)
             serie = {y: ts[indicator][y] for y in yrange}
             expected = {
                 int(k): v for k, v in
