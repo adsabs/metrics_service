@@ -7,8 +7,6 @@
 """
 
 from werkzeug.serving import run_simple
-from werkzeug.wsgi import DispatcherMiddleware
-
 from metrics_service import app
 
 application = app.create_app()

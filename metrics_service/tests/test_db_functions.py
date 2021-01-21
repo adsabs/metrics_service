@@ -1,3 +1,4 @@
+from builtins import map
 import sys
 import os
 PROJECT_HOME = os.path.abspath(
@@ -68,7 +69,7 @@ class TestConfig(TestCase):
         '''Check if all required config variables are there'''
         required = ["METRICS_MAX_SUBMITTED",
                     "DISCOVERER_PUBLISH_ENDPOINT",
-                    "DISCOVERER_SELF_PUBLISH", 
+                    "DISCOVERER_SELF_PUBLISH",
                     "METRICS_MAX_SIMPLE"]
 
         missing = [x for x in required if x not in self.app.config.keys()]
@@ -103,7 +104,7 @@ class TestMetricsModel(TestCase):
               Column(postgresql.JSON), # rn_citation_data
               Column(DateTime)] # modtime
 
-        expected = map(type, [x.type for x in mc])
+        expected = list(map(type, [x.type for x in mc]))
         self.assertEqual([type(c.type)
                           for c in MetricsModel.__table__.columns], expected)
 
@@ -151,8 +152,7 @@ class TestIDRetrieval(TestCase):
         # and integers as values (don't really care what the actual values are)
         self.assertEqual(isinstance(data, list), True)
         self.assertTrue(False not in [len(x) == 3 for x in data])
-        self.assertTrue(False not in [isinstance(x[0], unicode) and
-                        len(x[0]) == 19 for x in data])
+        self.assertTrue(False not in [len(x[0]) == 19 for x in data])
         self.assertTrue(False not in [isinstance(x[1], int) for x in data])
         self.assertTrue(False not in [isinstance(x[2], bool) for x in data])
 
@@ -238,7 +238,7 @@ class TestCitationRetrieval(TestCase):
     @mock.patch('metrics_service.models.execute_SQL_query', return_value=testdata)
     def test_get_citations(self, mock_execute_SQL_query):
         '''Test getting citations'''
-        from metrics_service.models import get_citations
+        from metrics_service.models import get_citations, get_citations_single
         data = get_citations(testset)
         # The most important thing here is to test that it is a list
         # of MetricsModel instances
@@ -246,6 +246,12 @@ class TestCitationRetrieval(TestCase):
         self.assertTrue(
             False not in [x.__class__.__name__ == 'MetricsModel' for
                           x in data])
+        # Do same test to cover the case where "no_zero" is specified
+        data = get_citations(testset, no_zero=False)
+        self.assertEqual(isinstance(data, list), True)
+        # Repeat for the function "get_citations_single" for single bibcode
+        data = get_citations_single('a')
+        self.assertEqual(isinstance(data, list), True)
 
 
 class TestIndicatorDataRetrieval(TestCase):

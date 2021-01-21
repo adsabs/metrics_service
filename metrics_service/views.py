@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from builtins import map
 from flask import current_app, request
 from flask_restful import Resource
 from flask_discoverer import advertise
@@ -50,7 +51,7 @@ class Metrics(Resource):
                 current_app.logger.warning('Metrics requested, but both bibcodes and query specified!')
                 return {'Error': 'Unable to get results!',
                         'Error Info': 'Cannot send both bibcodes and query'}, 403
-            bibcodes = map(str, request.json['bibcodes'])
+            bibcodes = list(map(str, request.json['bibcodes']))
             current_app.logger.info('Metrics requested for %s bibcodes'%len(bibcodes))
             if len(bibcodes) > max_records:
                 current_app.logger.warning('Metrics requested for %s bibcodes. Maximum is: %s!'%(len(bibcodes), max_records))
@@ -65,15 +66,15 @@ class Metrics(Resource):
                 current_app.logger.debug('Metrics requested for single record')
                 if len(types) > 0:
                     types = [t for t in types if t in ['basic', 'citations', 'histograms']]
-                if len(types) == 0:
-                    types=['basic', 'citations', 'histograms']
+#                if len(types) == 0:
+#                    types=['basic', 'citations', 'histograms']
                 if len(histograms) > 0:
                     histograms = [h for h in histograms if h in ['reads', 'citations']]
                 if len(histograms) == 0:
                     histograms=['reads', 'citations']
-        elif 'query' in request.json:
-            query = request.json['query']
-            current_app.logger.info('Metrics requested for query: %s'%query)
+#        elif 'query' in request.json:
+#            query = request.json['query']
+#            current_app.logger.info('Metrics requested for query: %s'%query)
         else:
             return {'Error': 'Unable to get results!',
                     'Error Info': 'Nothing to calculate metrics!'}, 403
@@ -126,7 +127,7 @@ class DetailMetrics(Resource):
         details = {}
         details['skipped bibcodes'] = []
         try:
-            bibcodes = map(str, request.json['bibcodes'])
+            bibcodes = list(map(str, request.json['bibcodes']))
         except:
             bibcodes = []
         if len(bibcodes) == 0:

@@ -1,4 +1,6 @@
 from __future__ import print_function
+from builtins import map
+from builtins import range
 import sys
 import os
 PROJECT_HOME = os.path.abspath(
@@ -110,6 +112,14 @@ class TestHelperFunctions(TestCase):
         expected = {1990: 0, 1991: 1, 1992: 2, 1993: 3}
         self.assertEqual(merge_dictionaries(d1, d2), expected)
 
+    def test_encoder(self):
+        '''Test if the encoder works properly'''
+        from metrics_service.metrics import MyEncoder
+        testdata = {'float':np.float64(1.2), 'int':np.int64(3)}
+        res = json.loads(json.dumps(testdata, cls=MyEncoder))
+        for t in testdata.keys():
+            self.assertEqual(type(res[t]).__name__, t)
+
 
 class TestRecordInfoFunction(TestCase):
 
@@ -192,6 +202,13 @@ class TestSelfCitationFunction(TestCase):
             Nc_r, expected_results['citation stats refereed'][
                                    'number of citing papers'])
 
+    @mock.patch('metrics_service.models.execute_SQL_query', return_value='foo')
+    def test_get_selfcitations_invalid(self, mock_execute_SQL_query):
+        '''Test getting self-citations'''
+        from metrics_service.metrics import get_selfcitations
+        data, selfcits, Ns, Ns_r, Nc, Nc_r = get_selfcitations(
+            [1, 2, 3], testset)
+        self.assertEqual(selfcits,[([], False)])
 
 class TestBasicStatsFunction(TestCase):
 
@@ -406,11 +423,11 @@ class TestPublicationHistogram(TestCase):
             expected = expected_results['histograms'][
                 'publications'][histogram]
             # Make the key integer again, because JSON turned it into a string
-            expected = {int(k): v for k, v in expected.items()}
+            expected = {int(k): v for k, v in list(expected.items())}
             # Get the non-zero entries for the histogram we just generated
             nonzero = dict(
                 [(year, freq) for year, freq in
-                 hist[histogram].items() if freq != 0])
+                 list(hist[histogram].items()) if freq != 0])
             # and compare
             self.assertEqual(nonzero, expected)
 
@@ -452,7 +469,7 @@ class TestUsageHistogram(TestCase):
         # Check that all entries are equal
         self.assertEqual(len(set(hist['all reads normalized'].values())), 1)
         # and then check that one entry has the expected value
-        self.assertAlmostEqual(hist['all reads normalized'].values()[0],
+        self.assertAlmostEqual(list(hist['all reads normalized'].values())[0],
                                expected_results['basic stats'][
                                'normalized paper count'])
         # Because the downloads have been constructed in the same way,
@@ -499,11 +516,11 @@ class TestCitationHistogram(TestCase):
             # Get the expected values
             expected = expected_results['histograms']['citations'][histogram]
             # Make the key integer again, because JSON turned it into a string
-            expected = {int(k): v for k, v in expected.items()}
+            expected = {int(k): v for k, v in list(expected.items())}
             # Get the non-zero entries for the histogram we just generated
             nonzero = dict(
                 [(year, freq) for year, freq in
-                 hist[histogram].items() if freq != 0])
+                 list(hist[histogram].items()) if freq != 0])
             # and compare
             self.assertEqual(nonzero, expected)
 
@@ -525,22 +542,22 @@ class TestTimeSeries(TestCase):
         from metrics_service.metrics import get_time_series
 
         ts = get_time_series(testset, testset)
-        
+
         # The time series get test over the range of publication years
         years = [int(b[:4]) for b in testset]
-        yrange = range(min(years), max(years) + 1)
+        yrange = list(range(min(years), max(years) + 1))
         indicators = ['h', 'g', 'i10', 'i100', 'read10']
         for indicator in indicators:
             print(indicator)
             serie = {y: ts[indicator][y] for y in yrange}
             expected = {
                 int(k): v for k, v in
-                expected_results['time series'][indicator].items()}
+                list(expected_results['time series'][indicator].items())}
             self.assertEqual(serie, expected)
         serie = {y: ts['tori'][y] for y in yrange}
         expected = {
             int(k): v for k, v in
-            expected_results['time series']['tori'].items()}
+            list(expected_results['time series']['tori'].items())}
         self.assertTrue(
             'False' not in [np.allclose([serie[y]],
                             expected[y]) for y in yrange])
