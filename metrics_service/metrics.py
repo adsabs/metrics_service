@@ -145,6 +145,8 @@ def generate_metrics(**args):
             tori_data=tdata,
             include_tori=tori,
             self_cits=selfcits)
+    # The next line takes care of mapping numpy float64 and int64 values to regular floats and integers
+    # (JSON serialization fails for numpy float64 and int64 classes)
     res = json.loads(json.dumps(result, cls=MyEncoder))
     return res
 
