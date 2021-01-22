@@ -40,7 +40,7 @@ def execute_SQL_query(query):
         return results
 
 def get_identifiers(bibcodes):
-    bibstr = ",".join(map(lambda a: "\'%s\'" % a, bibcodes))
+    bibstr = ",".join(["\'%s\'" % a for a in bibcodes])
     rawSQL = "SELECT id,bibcode,refereed FROM metrics WHERE \
               bibcode = ANY (ARRAY[%s]) ORDER BY citation_num DESC"
     SQL = rawSQL % bibstr
@@ -54,7 +54,7 @@ def get_identifiers(bibcodes):
 
 
 def get_basic_stats_data(IDs):
-    IDstr = ",".join(map(lambda a: "(%s)" % a, IDs))
+    IDstr = ",".join(["(%s)" % a for a in IDs])
     rawSQL = "SELECT bibcode,refereed,reads,downloads,author_num FROM \
               metrics WHERE id = ANY (VALUES %s)"
     SQL = rawSQL % IDstr
@@ -63,7 +63,7 @@ def get_basic_stats_data(IDs):
 
 
 def get_publication_data(IDs):
-    IDstr = ",".join(map(lambda a: "(%s)" % a, IDs))
+    IDstr = ",".join(["(%s)" % a for a in IDs])
     rawSQL = "SELECT bibcode,refereed,author_num FROM metrics \
               WHERE id = ANY (VALUES %s)"
     SQL = rawSQL % IDstr
@@ -72,7 +72,7 @@ def get_publication_data(IDs):
 
 
 def get_citation_data(IDs):
-    IDstr = ",".join(map(lambda a: "(%s)" % a, IDs))
+    IDstr = ",".join(["(%s)" % a for a in IDs])
     rawSQL = "SELECT bibcode,refereed,citation_num,refereed_citation_num,\
               author_num FROM metrics WHERE id = ANY (VALUES %s) AND \
               citation_num <> 0 ORDER BY citation_num DESC"
@@ -82,7 +82,7 @@ def get_citation_data(IDs):
 
 
 def get_citations(IDs, no_zero=True):
-    IDstr = ",".join(map(lambda a: "(%s)" % a, IDs))
+    IDstr = ",".join(["(%s)" % a for a in IDs])
     if no_zero:
         rawSQL = "SELECT bibcode,refereed,citations,refereed_citations,author_num \
               FROM metrics WHERE id = ANY (VALUES %s) AND citation_num <> 0"
@@ -95,7 +95,7 @@ def get_citations(IDs, no_zero=True):
 
 
 def get_indicator_data(IDs):
-    IDstr = ",".join(map(lambda a: "(%s)" % a, IDs))
+    IDstr = ",".join(["(%s)" % a for a in IDs])
     rawSQL = "SELECT bibcode,refereed,citation_num FROM metrics \
               WHERE id = ANY (VALUES %s) AND citation_num <> 0 \
               ORDER BY citation_num DESC"
@@ -105,7 +105,7 @@ def get_indicator_data(IDs):
 
 
 def get_usage_data(IDs):
-    IDstr = ",".join(map(lambda a: "(%s)" % a, IDs))
+    IDstr = ",".join(["(%s)" % a for a in IDs])
     rawSQL = "SELECT bibcode,refereed,reads,downloads,author_num \
               FROM metrics WHERE id = ANY (VALUES %s) \
               AND array_length(reads, 1) > 0"
@@ -115,7 +115,7 @@ def get_usage_data(IDs):
 
 
 def get_tori_data(IDs):
-    IDstr = ",".join(map(lambda a: "(%s)" % a, IDs))
+    IDstr = ",".join(["(%s)" % a for a in IDs])
     rawSQL = "SELECT id,bibcode,refereed,rn_citation_data,author_num \
               FROM metrics WHERE id = ANY (VALUES %s) \
               AND citation_num <> 0"

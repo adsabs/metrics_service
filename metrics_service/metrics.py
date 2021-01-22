@@ -3,37 +3,51 @@ Created on April 8, 2015
 
 @author: ehenneken
 '''
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from builtins import range
 from flask import current_app, request
 import sys
 import time
 import os
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import itertools
-import simplejson as json
+#import simplejson as json
+import json
 import numpy as np
 import cytoolz as cy
 from math import sqrt
 from collections import defaultdict
 from operator import itemgetter
 from datetime import date, datetime
-from models import get_identifiers
-from models import get_basic_stats_data
-from models import get_citations
-from models import get_citation_data
-from models import get_publication_data
-from models import get_usage_data
-from models import get_indicator_data
-from models import get_tori_data
-from models import get_citations_single
+from .models import get_identifiers
+from .models import get_basic_stats_data
+from .models import get_citations
+from .models import get_citation_data
+from .models import get_publication_data
+from .models import get_usage_data
+from .models import get_indicator_data
+from .models import get_tori_data
+from .models import get_citations_single
 
 # Helper methods
-
+class MyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        elif isinstance(obj, np.floating):
+            return float(obj)
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
+        else:
+            return super(MyEncoder, self).default(obj)
 
 def chunks(l, n):
     """
     Yield successive n-sized chunks from l.
     """
-    for i in xrange(0, len(l), n):
+    for i in range(0, len(l), n):
         yield l[i:i + n]
 
 
@@ -41,7 +55,7 @@ def get_norm_histo(l):
     d = defaultdict(list)
     for tag, num in l:
         d[tag].append(num)
-    return {k: sum(v) for k, v in d.iteritems()}
+    return {k: sum(v) for k, v in d.items()}
 
 
 def merge_dictionaries(x, y):
@@ -68,8 +82,8 @@ def generate_metrics(**args):
     # First retrieve the data we need for our calculations
     bibcodes, bibcodes_ref, identifiers, skipped = get_record_info(
         bibcodes=args.get('bibcodes', []), query=args.get('query', None))
-    if len(bibcodes) == 1 and len(metrics_types) == 0:
-        metrics_types = ['basic', 'citations', 'histograms']
+#    if len(bibcodes) == 1 and len(metrics_types) == 0:
+#        metrics_types = ['basic', 'citations', 'histograms']
     # If no identifiers were returned, return empty results
     if len(identifiers) == 0:
         return result
@@ -131,7 +145,10 @@ def generate_metrics(**args):
             tori_data=tdata,
             include_tori=tori,
             self_cits=selfcits)
-    return result
+    # The next line takes care of mapping numpy float64 and int64 values to regular floats and integers
+    # (JSON serialization fails for numpy float64 and int64 classes)
+    res = json.loads(json.dumps(result, cls=MyEncoder))
+    return res
 
 # Data retrieval methods
 # A. Data before we any sort of computation
@@ -167,11 +184,12 @@ def get_selfcitations(identifiers, bibcodes):
             for p in data]
     except:
         selfcits = [([], False)]
+        return data, selfcits, 0, 0, 0, 0
     Nself = sum([len(c[0]) for c in selfcits])
     Nself_refereed = sum([len(c[0]) * c[1] for c in selfcits])
     Nciting = len(set(itertools.chain(*[p.citations for p in data])))
     Nciting_ref = len(
-        set(itertools.chain(*[p.citations for p in data if p.refereed])))
+    set(itertools.chain(*[p.citations for p in data if p.refereed])))
     return data, selfcits, Nself, Nself_refereed, Nciting, Nciting_ref
 
 # B. Statistics functions
@@ -190,9 +208,9 @@ def get_basic_stats(identifiers):
     bsr['number of papers'] = len([p for p in data if p.refereed])
     # Next get the (refereed) normalized paper count
     bs['normalized paper count'] = np.sum(
-        np.array([1.0 / float(p.author_num) for p in data]))
+        np.array([1.0 / float(p.author_num) for p in data]), dtype=float)
     bsr['normalized paper count'] = np.sum(
-        np.array([1.0 / float(p.author_num) for p in data if p.refereed]))
+        np.array([1.0 / float(p.author_num) for p in data if p.refereed]), dtype=float)
     # Get the total number of reads
     year = datetime.now().year
     Nentries = year - 1996 + 1
@@ -202,11 +220,11 @@ def get_basic_stats(identifiers):
         len(p.reads) == Nentries]
     reads_totals = [sum(r) for r in reads]
     reads_ref_totals = [sum(r) for r in reads_ref]
-    bs['total number of reads'] = np.sum(reads_totals or [0])
-    bsr['total number of reads'] = np.sum(reads_ref_totals or [0])
+    bs['total number of reads'] = np.sum(reads_totals or [0], dtype=int)
+    bsr['total number of reads'] = np.sum(reads_ref_totals or [0], dtype=int)
     # Get the average number of reads
-    bs['average number of reads'] = np.mean(reads_totals or [0])
-    bsr['average number of reads'] = np.mean(reads_ref_totals or [0])
+    bs['average number of reads'] = np.mean(reads_totals or [0], dtype=int)
+    bsr['average number of reads'] = np.mean(reads_ref_totals or [0], dtype=int)
     # Get the median number of reads
     bs['median number of reads'] = np.median(reads_totals or [0])
     bsr['median number of reads'] = np.median(reads_ref_totals or [0])
@@ -231,11 +249,11 @@ def get_basic_stats(identifiers):
                      p.downloads and len(p.downloads) == Nentries]
     downloads_totals = [sum(d) for d in downloads]
     downloads_ref_totals = [sum(d) for d in downloads_ref]
-    bs['total number of downloads'] = np.sum(downloads_totals or [0])
-    bsr['total number of downloads'] = np.sum(downloads_ref_totals or [0])
+    bs['total number of downloads'] = np.sum(downloads_totals or [0], dtype=int)
+    bsr['total number of downloads'] = np.sum(downloads_ref_totals or [0], dtype=int)
     # Get the average number of downloads
-    bs['average number of downloads'] = np.mean(downloads_totals or [0])
-    bsr['average number of downloads'] = np.mean(downloads_ref_totals or [0])
+    bs['average number of downloads'] = np.mean(downloads_totals or [0], dtype=float)
+    bsr['average number of downloads'] = np.mean(downloads_ref_totals or [0], dtype=float)
     # Get the median number of downloads
     bs['median number of downloads'] = np.median(downloads_totals or [0])
     bsr['median number of downloads'] = np.median(downloads_ref_totals or [0])
@@ -298,39 +316,39 @@ def get_citation_stats(identifiers, bibcodes, bibcodes_ref):
     # The citation stats
     # Total number of citations
     cs['total number of citations'] = np.sum(
-        [p.citation_num for p in data] or [0])
+        [p.citation_num for p in data] or [0], dtype=int)
     csr['total number of citations'] = np.sum(
-        [p.citation_num for p in data if p.refereed] or [0])
+        [p.citation_num for p in data if p.refereed] or [0], dtype=int)
     # Average number of citations
-    cs['average number of citations'] = np.mean(citnums or [0])
-    csr['average number of citations'] = np.mean(citnums_ref or [0])
+    cs['average number of citations'] = np.mean(citnums or [0], dtype=float)
+    csr['average number of citations'] = np.mean(citnums_ref or [0], dtype=float)
     # Median number of citations
     cs['median number of citations'] = np.median(citnums or [0])
     csr['median number of citations'] = np.median(citnums_ref or [0])
     # Normalized number of citations
     cs['normalized number of citations'] = np.sum(
-        [float(p.citation_num) / float(p.author_num) for p in data] or [0])
+        [float(p.citation_num) / float(p.author_num) for p in data] or [0], dtype=float)
     csr['normalized number of citations'] = np.sum(
         [float(p.citation_num) / float(p.author_num) for p in data if
-         p.refereed] or [0])
+         p.refereed] or [0], dtype=float)
     # The refereed citations stats
     ##
     cs['total number of refereed citations'] = np.sum(
-        [p.refereed_citation_num for p in data]or [0])
+        [p.refereed_citation_num for p in data]or [0], dtype=int)
     csr['total number of refereed citations'] = np.sum(
-        [p.refereed_citation_num for p in data if p.refereed] or [0])
-    cs['average number of refereed citations'] = np.mean(ref_citnums or [0])
+        [p.refereed_citation_num for p in data if p.refereed] or [0], dtype=int)
+    cs['average number of refereed citations'] = np.mean(ref_citnums or [0], dtype=float)
     csr['average number of refereed citations'] = np.mean(
-        ref_citnums_ref or [0])
+        ref_citnums_ref or [0], dtype=float)
     cs['median number of refereed citations'] = np.median(ref_citnums or [0])
     csr['median number of refereed citations'] = np.median(
         ref_citnums_ref or [0])
     cs['normalized number of refereed citations'] = np.sum(
         [float(p.refereed_citation_num) / float(p.author_num) for
-         p in data] or [0])
+         p in data] or [0], dtype=float)
     csr['normalized number of refereed citations'] = np.sum(
         [float(p.refereed_citation_num) / float(p.author_num) for
-         p in data if p.refereed] or [0])
+         p in data if p.refereed] or [0], dtype=float)
     # Send the results back
     return cs, csr, data, selfcits, citdata
 
@@ -372,23 +390,23 @@ def get_usage_histograms(identifiers, usage_type='reads', data=None):
         usage_data = [
             p.reads for p in data if p.reads and len(p.reads) == Nentries]
         usage = [sum(sublist)
-                 for sublist in itertools.izip(*usage_data or zeros)]
+                 for sublist in zip(*usage_data or zeros)]
         # and also get the normalized reads
-        usage_data = [np.array(p.reads) / float(p.author_num)
+        usage_data = [np.array(p.reads, dtype=int) / float(p.author_num)
                       for p in data if p.reads and len(p.reads) == Nentries]
         usage_norm = [sum(sublist)
-                      for sublist in itertools.izip(*usage_data or zeros)]
+                      for sublist in zip(*usage_data or zeros)]
         # Do the same for just the refereed publications
         usage_data = [p.reads for p in data if p.refereed and p.reads and
                       len(p.reads) == Nentries]
         usage_ref = [sum(sublist)
-                     for sublist in itertools.izip(*usage_data or zeros)]
+                     for sublist in zip(*usage_data or zeros)]
         # and also get the normalized version
-        usage_data = [np.array(p.reads) / float(p.author_num)
+        usage_data = [np.array(p.reads, dtype=int) / float(p.author_num)
                       for p in data if p.refereed and p.reads and
                       len(p.reads) == Nentries]
         usage_ref_norm = [sum(sublist)
-                          for sublist in itertools.izip(*usage_data or zeros)]
+                          for sublist in zip(*usage_data or zeros)]
     else:
         usage_type = 'downloads'
         # Get all downloads data and sum up the individual lists
@@ -396,24 +414,24 @@ def get_usage_histograms(identifiers, usage_type='reads', data=None):
             p.downloads for p in data if p.downloads and
             len(p.downloads) == Nentries]
         usage = [sum(sublist)
-                 for sublist in itertools.izip(*usage_data or zeros)]
+                 for sublist in zip(*usage_data or zeros)]
         # and also get the normalized version
-        usage_data = [np.array(p.downloads) / float(p.author_num)
+        usage_data = [np.array(p.downloads, dtype=int) / float(p.author_num)
                       for p in data if p.downloads and
                       len(p.downloads) == Nentries]
         usage_norm = [sum(sublist)
-                      for sublist in itertools.izip(*usage_data or zeros)]
+                      for sublist in zip(*usage_data or zeros)]
         # Do the same for just the refereed publications
         usage_data = [p.downloads for p in data if p.refereed and
                       p.downloads and len(p.downloads) == Nentries]
         usage_ref = [sum(sublist)
-                     for sublist in itertools.izip(*usage_data or zeros)]
+                     for sublist in zip(*usage_data or zeros)]
         # and also get the normalized version
-        usage_data = [np.array(p.downloads) / float(p.author_num)
+        usage_data = [np.array(p.downloads, dtype=int) / float(p.author_num)
                       for p in data if p.refereed and p.downloads and
                       len(p.downloads) == Nentries]
         usage_ref_norm = [sum(sublist)
-                          for sublist in itertools.izip(*usage_data or zeros)]
+                          for sublist in zip(*usage_data or zeros)]
         # Construct the histograms (index 0 corresponds with year 1996)
     uh['all %s' % usage_type] = dict(
         [(1996 + i, v) for i, v in enumerate(usage)])
@@ -468,7 +486,7 @@ def get_citation_histograms(identifiers, data=None):
     # Get the earliest citation
     try:
         min_year = min(
-            rr_hist.keys() + rn_hist.keys() + nr_hist.keys() + nn_hist.keys())
+            list(rr_hist.keys()) + list(rn_hist.keys()) + list(nr_hist.keys()) + list(nn_hist.keys()))
         nullhist = [(y, 0) for y in range(min_year, current_year + 1)]
     except:
         nullhist = [(y, 0) for y in range(min(years), current_year + 1)]
@@ -480,10 +498,10 @@ def get_citation_histograms(identifiers, data=None):
     ch['nonrefereed to refereed'] = merge_dictionaries(dict(nullhist), nr_hist)
     ch['nonrefereed to nonrefereed'] = merge_dictionaries(
         dict(nullhist), nn_hist)
-    min_year = min(ch['refereed to refereed'].keys() +
-                   ch['refereed to nonrefereed'].keys() +
-                   ch['nonrefereed to refereed'].keys() +
-                   ch['nonrefereed to nonrefereed'].keys())
+    min_year = min(list(ch['refereed to refereed'].keys()) +
+                   list(ch['refereed to nonrefereed'].keys()) +
+                   list(ch['nonrefereed to refereed'].keys()) +
+                   list(ch['nonrefereed to nonrefereed'].keys()))
     nullhist = [(y, 0) for y in range(min_year, current_year + 1)]
     # Normalized histograms need a different approach
     tmp = list(itertools.chain(*[[(d, x[1]) for d in x[0]] for x in rr_data]))
@@ -592,9 +610,9 @@ def get_tori(identifiers, bibcodes, self_cits=None):
             p.rn_citation_data])) if p['bibcode'] not in self_citations]
     try:
         tori = np.sum(
-            np.array([r['auth_norm'] * r['ref_norm'] for r in tori_data]))
+            np.array([r['auth_norm'] * r['ref_norm'] for r in tori_data]), dtype=float)
         tori_ref = np.sum(
-            np.array([r['auth_norm'] * r['ref_norm'] for r in tori_data_ref]))
+            np.array([r['auth_norm'] * r['ref_norm'] for r in tori_data_ref]), dtype=float)
     except:
         return 0, 0, 0, 0, tori_data
     # The riq index follows from the Tori index and the year range
@@ -634,7 +652,7 @@ def get_time_series(identifiers, bibcodes, data=None, usagedata=None,
     # Determine the year range
     Nentries = datetime.now().year - 1996 + 1
     years = [int(b[:4]) for b in bibcodes]
-    yrange = range(min(years), datetime.now().year + 1)
+    yrange = list(range(min(years), datetime.now().year + 1))
     d0 = date(datetime.now().year, 1, 1)
     d1 = date(datetime.now().year, datetime.now().month, datetime.now().day)
     d2 = date(datetime.now().year, 12, 31)

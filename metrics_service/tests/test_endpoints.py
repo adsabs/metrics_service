@@ -1,3 +1,5 @@
+from builtins import str
+from builtins import range
 import sys
 import os
 PROJECT_HOME = os.path.abspath(
@@ -352,7 +354,7 @@ class TestUsageHistogramsBibcodes(TestCase):
         self.assertEqual(len(set(hist['all reads normalized'].values())), 1)
         # and then check that one entry has the expected value
         er = expected_results['basic stats']['normalized paper count']
-        self.assertAlmostEqual(hist['all reads normalized'].values()[0], er)
+        self.assertAlmostEqual(list(hist['all reads normalized'].values())[0], er)
         # Because the downloads have been constructed in the same way, we only
         # need to verify that the downloads histograms are the same as the
         # reads ones
@@ -413,7 +415,7 @@ class TestCitationHistogramsBibcodes(TestCase):
                       u'refereed to refereed',
                       u'nonrefereed to refereed normalized']
         # Check that they are all there
-        self.assertEqual(r.json['histograms']['citations'].keys(), histograms)
+        self.assertEqual(sorted(r.json['histograms']['citations'].keys()), sorted(histograms))
         for histogram in histograms:
             # Get the expected values
             expected = expected_results['histograms']['citations'][histogram]
@@ -504,11 +506,92 @@ class TestEverythingBibcodes(TestCase):
                          'histograms', 'citation stats', 'time series',
                          'basic stats refereed', 'indicators refereed',
                          'skipped bibcodes', 'indicators']
-        self.assertEqual(r.json.keys(), expected_keys)
+        self.assertEqual(sorted(r.json.keys()), sorted(expected_keys))
         self.assertTrue(
             r.json['histograms'].keys(),
             ['publications', 'usage', 'citations'])
 
+    @mock.patch('metrics_service.models.execute_SQL_query', return_value=testdata)
+    def test_get_everything_bibcodes_no_tori(self, mock_execute_SQL_query):
+        '''Test getting everything when no specific metrics type
+           is specified'''
+        r = self.client.post(
+            url_for('metrics'),
+            content_type='application/json',
+            data=json.dumps({'bibcodes': testset, 'tori': False}))
+        self.assertTrue(r.status_code == 200)
+        # Check that the right info is returned; nothing more, nothing less
+        self.assertEqual(r.json['indicators']['tori'],'NA')
+
+    @mock.patch('metrics_service.models.execute_SQL_query', return_value=testdata)
+    def test_get_everything_single_bibcode(self, mock_execute_SQL_query):
+        '''Test getting everything when no specific metrics type
+           is specified'''
+        r = self.client.post(
+            url_for('metrics'),
+            content_type='application/json',
+            data=json.dumps({'bibcodes': testset[:1], 'types': ['a', 'b', 'basic']}))
+        self.assertTrue(r.status_code == 200)
+        # Check that the right info is returned; nothing more, nothing less
+        self.assertEqual(sorted(list(r.json.keys())), sorted(['skipped bibcodes', 'basic stats', 'basic stats refereed']))
+
+    @mock.patch('metrics_service.models.execute_SQL_query', return_value=testdata)
+    def test_get_everything_single_bibcode_no_types(self, mock_execute_SQL_query):
+        '''Test getting everything when no specific metrics type
+           is specified'''
+        r = self.client.post(
+            url_for('metrics'),
+            content_type='application/json',
+            data=json.dumps({'bibcodes': testset[:1], 'types':[]}))
+        self.assertTrue(r.status_code == 200)
+        # Check that the right info is returned; nothing more, nothing less
+        expected = ['skipped bibcodes', 'basic stats', 'basic stats refereed', 'citation stats', 'citation stats refereed', 'histograms']
+        self.assertEqual(sorted(list(r.json.keys())), sorted(expected))
+
+    @mock.patch('metrics_service.models.execute_SQL_query', return_value=testdata)
+    def test_get_everything_single_bibcode_histograms(self, mock_execute_SQL_query):
+        '''Test getting everything when no specific metrics type
+           is specified'''
+        r = self.client.post(
+            url_for('metrics'),
+            content_type='application/json',
+            data=json.dumps({'bibcodes': testset[:1], 'types':['histograms'], 'histograms':['a','b','citations']}))
+        self.assertTrue(r.status_code == 200)
+        # Check that the right info is returned; nothing more, nothing less
+        expected = ['citations']
+        self.assertEqual(list(r.json['histograms']), expected)
+
+    @mock.patch('metrics_service.models.execute_SQL_query', return_value=testdata)
+    def test_get_everything_single_bibcode_histograms_empty(self, mock_execute_SQL_query):
+        '''Test getting everything when no specific metrics type
+           is specified'''
+        r = self.client.post(
+            url_for('metrics'),
+            content_type='application/json',
+            data=json.dumps({'bibcodes': testset[:1], 'types':['histograms'], 'histograms':[]}))
+        self.assertTrue(r.status_code == 200)
+        # Check that the right info is returned; nothing more, nothing less
+        expected = ['reads', 'citations']
+        self.assertEqual(list(r.json['histograms']), expected)
+
+class TestDetailReport(TestCase):
+
+    '''Check if everything returned when no metrics type is specified'''
+
+    def create_app(self):
+        '''Create the wsgi application'''
+        app_ = app.create_app()
+        return app_
+
+    @mock.patch('metrics_service.models.execute_SQL_query', return_value=testdata)
+    def test_get_everything_bibcodes(self, mock_execute_SQL_query):
+        '''Test getting everything when no specific metrics type
+           is specified'''
+        r = self.client.post(
+            url_for('detailmetrics'),
+            content_type='application/json',
+            data=json.dumps({'bibcodes': testset}))
+        self.assertTrue(r.status_code == 200)
 
 class TestMetricsSingleBibcode(TestCase):
 
@@ -533,9 +616,9 @@ class TestMetricsSingleBibcode(TestCase):
                          u'citation stats',
                          u'basic stats refereed',
                          u'skipped bibcodes']
-        self.assertEqual(r.json.keys(), expected_keys)
+        self.assertEqual(sorted(r.json.keys()), sorted(expected_keys))
         # The histograms should consist of reads and citations
-        self.assertEqual(r.json['histograms'].keys(), ['reads', 'citations'])
+        self.assertEqual(list(r.json['histograms'].keys()), ['reads', 'citations'])
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
