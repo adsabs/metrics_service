@@ -223,8 +223,14 @@ def get_basic_stats(identifiers):
     bs['total number of reads'] = np.sum(reads_totals or [0], dtype=int)
     bsr['total number of reads'] = np.sum(reads_ref_totals or [0], dtype=int)
     # Get the average number of reads
-    bs['average number of reads'] = np.mean(reads_totals or [0], dtype=float)
-    bsr['average number of reads'] = np.mean(reads_ref_totals or [0], dtype=float)
+    try:
+        bs['average number of reads'] = float(bs['total number of reads'])/float(bs['number of papers'])
+    except:
+        bs['average number of reads'] = 0.0
+    try:
+        bsr['average number of reads'] = float(bsr['total number of reads'])/float(bsr['number of papers'])
+    except:
+        bsr['average number of reads'] = 0.0
     # Get the median number of reads
     bs['median number of reads'] = np.median(reads_totals or [0])
     bsr['median number of reads'] = np.median(reads_ref_totals or [0])
