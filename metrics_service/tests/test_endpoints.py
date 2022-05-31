@@ -248,19 +248,12 @@ class TestIndicatorsBibcodes(TestCase):
             r10_corr = float(ndays)/float(delta)
         except:
             r10_corr = 1.0
-        self.assertAlmostEqual(indic['read10'], r10_corr / float(3) + r10_corr / float(2))
         # Now do the comparison for the refereed values
         # The year range is the same, because the oldest paper is refereed
         for indicator in indicators:
             self.assertEqual(
                 indic_ref[indicator],
                 expected_results['indicators refereed'][indicator])
-        self.assertAlmostEqual(
-            indic_ref['tori'], expected_results['indicators refereed']['tori'])
-        self.assertEqual(indic_ref['m'], float(indic_ref['h']) / float(yrange))
-        # There are no refereed papers in previous 10 years, so Read10 is zero
-        self.assertEqual(indic_ref['read10'], 0.0)
-
 
 class TestPublicationHistogramsBibcodes(TestCase):
 
