@@ -65,7 +65,7 @@ class Metrics(Resource):
             elif len(bibcodes) == 1:
                 current_app.logger.debug('Metrics requested for single record')
                 if len(types) > 0:
-                    types = [t for t in types if t in ['basic', 'citations', 'histograms']]
+                    types = [t for t in types if t in ['basic', 'citations', 'histograms', 'indicators']]
 #                if len(types) == 0:
 #                    types=['basic', 'citations', 'histograms']
                 if len(histograms) > 0:

@@ -538,7 +538,7 @@ class TestEverythingBibcodes(TestCase):
             data=json.dumps({'bibcodes': testset[:1], 'types':[]}))
         self.assertTrue(r.status_code == 200)
         # Check that the right info is returned; nothing more, nothing less
-        expected = ['skipped bibcodes', 'basic stats', 'basic stats refereed', 'citation stats', 'citation stats refereed', 'histograms']
+        expected = ['skipped bibcodes', 'basic stats', 'basic stats refereed', 'citation stats', 'citation stats refereed', 'histograms', 'indicators', 'indicators refereed']
         self.assertEqual(sorted(list(r.json.keys())), sorted(expected))
 
     @mock.patch('metrics_service.models.execute_SQL_query', return_value=testdata)
