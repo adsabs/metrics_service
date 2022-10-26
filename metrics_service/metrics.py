@@ -481,7 +481,7 @@ def get_citation_histograms(identifiers, data=None):
     nr_hist = cy.frequencies(list(itertools.chain(*[d[0] for d in nr_data])))
     nn_hist = cy.frequencies(list(itertools.chain(*[d[0] for d in nn_data])))
     # From the years of the citations, determine the maximum
-    cityears = rr_hist.keys() + rn_hist.keys() + nr_hist.keys() + nn_hist.keys()
+    cityears = dict(rr_hist).keys() + dict(rn_hist).keys() + dict(nr_hist).keys() + dict(nn_hist).keys()
     max_year = max(cityears)
     # If this year lies in the future, set the "current year" to that year
     if max_year > current_year:
