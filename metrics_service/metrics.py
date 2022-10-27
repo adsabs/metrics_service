@@ -480,19 +480,15 @@ def get_citation_histograms(identifiers, data=None):
     rn_hist = cy.frequencies(list(itertools.chain(*[d[0] for d in rn_data])))
     nr_hist = cy.frequencies(list(itertools.chain(*[d[0] for d in nr_data])))
     nn_hist = cy.frequencies(list(itertools.chain(*[d[0] for d in nn_data])))
-    try:
-        max_year = max(max_year, max(rr_hist.keys()))
-        max_year = max(max_year, max(rn_hist.keys()))
-        max_year = max(max_year, max(nr_hist.keys()))
-        max_year = max(max_year, max(nn_hist.keys()))
-    except:
-        pass
+    # From the years of the citations, determine the maximum
+    cityears = list(dict(rr_hist).keys()) + list(dict(rn_hist).keys()) + list(dict(nr_hist).keys()) + list(dict(nn_hist).keys())
+    max_year = max(cityears or [0])
+    # If this year lies in the future, set the "current year" to that year
     if max_year > current_year:
         current_year = max_year
     # Get the earliest citation
     try:
-        min_year = min(
-            list(rr_hist.keys()) + list(rn_hist.keys()) + list(nr_hist.keys()) + list(nn_hist.keys()))
+        min_year = min(cityears)
         nullhist = [(y, 0) for y in range(min_year, current_year + 1)]
     except:
         nullhist = [(y, 0) for y in range(min(years), current_year + 1)]
