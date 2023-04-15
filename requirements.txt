@@ -9,4 +9,4 @@ psycopg2==2.8.4
 simplejson==3.10.0
 toolz==0.8.2; python_version < '3.0'
 toolz==0.11.1; python_version > '3.0'
-future==0.18.2
+future==0.18.3
