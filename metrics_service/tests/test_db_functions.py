@@ -7,7 +7,7 @@ sys.path.append(PROJECT_HOME)
 from flask_testing import TestCase
 from flask import request
 from flask import url_for, Flask
-from sqlalchemy import Column, Integer, String, Float, DateTime, Boolean
+from sqlalchemy import Column, Integer, String, Float, DateTime, Boolean, BigInteger
 from sqlalchemy.dialects import postgresql
 from datetime import datetime
 import glob
@@ -87,7 +87,7 @@ class TestMetricsModel(TestCase):
 
     def test_metrics_model(self):
         '''Test the guts of the metrics model'''
-        mc = [Column(Integer), # id
+        mc = [Column(BigInteger), # id
               Column(String),  # bibcode
               Column(postgresql.REAL), # an_citations
               Column(postgresql.REAL), # an_refereed_citations

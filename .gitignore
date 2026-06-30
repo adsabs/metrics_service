@@ -8,3 +8,4 @@ venv
 # Mac specific files
 .DS_Store
 *.swp
+.venv

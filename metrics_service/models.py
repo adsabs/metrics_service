@@ -6,7 +6,7 @@ Created on April 9, 2015
 from flask import current_app, request
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import text
-from sqlalchemy import Column, Integer, String, DateTime, Boolean
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, BigInteger
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.engine.result import ResultProxy
 from sqlalchemy.ext.declarative import declarative_base
@@ -17,7 +17,7 @@ Base = declarative_base()
 
 class MetricsModel(Base):
     __tablename__ = 'metrics'
-    id = Column(Integer, primary_key=True)
+    id = Column(BigInteger, primary_key=True)
     bibcode = Column(String, nullable=False, index=True, unique=True)
     an_citations = Column(postgresql.REAL)
     an_refereed_citations = Column(postgresql.REAL)
